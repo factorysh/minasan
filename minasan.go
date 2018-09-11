@@ -11,6 +11,9 @@ import (
 
 func main() {
 	d := guerrilla.Daemon{}
+	d.SetConfig(guerrilla.AppConfig{
+		AllowedHosts: []string{"example.com"},
+	})
 	d.AddProcessor("minasan", processor.MinasanProcessor)
 	err := d.Start()
 
