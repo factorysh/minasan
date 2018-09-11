@@ -1,0 +1,9 @@
+
+[prune]
+  go-tests = true
+  unused-packages = true
+
+[[constraint]]
+  name = "github.com/flashmob/go-guerrilla"
+  source = "github.com/athoune/go-guerrilla"
+  branch = "dep"
