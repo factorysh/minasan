@@ -16,9 +16,11 @@ func doSmtpd() {
 	d.SetConfig(guerrilla.AppConfig{
 		AllowedHosts: []string{"example.com"},
 		BackendConfig: backends.BackendConfig{
-			"save_process":     "HeadersParser|Debugger|Minasan",
-			"validate_process": "Minasan",
-			"gitlab_domain":    os.Getenv("GITLAB_DOMAIN"),
+			"save_process":         "HeadersParser|Debugger|Minasan",
+			"validate_process":     "Minasan",
+			"gitlab_domain":        os.Getenv("GITLAB_DOMAIN"),
+			"gitlab_private_token": os.Getenv("GITLAB_PRIVATE_TOKEN"),
+			"smtp_out":             os.Getenv("SMTP_OUT"),
 		},
 	})
 	d.AddProcessor("Minasan", processor.MinasanProcessor)

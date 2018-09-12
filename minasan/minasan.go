@@ -13,7 +13,7 @@ import (
 )
 
 type Minasan struct {
-	client  *gitlab.Client
+	Client  *gitlab.Client
 	SMTPOut string
 }
 
@@ -24,7 +24,7 @@ func (m *Minasan) Targets(mailName string) ([]string, error) {
 	}
 	group := blob[0]
 	project := blob[1]
-	return m.client.MailsFromGroupProject(group, project)
+	return m.Client.MailsFromGroupProject(group, project)
 }
 
 func writeStuff(w io.Writer, blobs ...string) error {
