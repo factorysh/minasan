@@ -13,8 +13,8 @@ func TestMail(t *testing.T) {
 		SMTPOut: "127.0.0.1:1025",
 	}
 
-	envelope := mail.NewEnvelope("sender@example.com", 42)
-	envelope.Data = *bytes.NewBufferString(`From: sender.example.com
+	envelope := mail.NewEnvelope("127.0.0.1", 42)
+	envelope.Data = *bytes.NewBufferString(`From: sender@example.com
 Subject: Big test
 
 Hello World
