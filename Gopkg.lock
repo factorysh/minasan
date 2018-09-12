@@ -10,6 +10,14 @@
   revision = "d46933a94f05c6657d7b923fcf5ac563ee37ec79"
 
 [[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = "UT"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   branch = "dep"
   digest = "1:1ad63e04778eae38848f44772bfbb39bb8768114a3cbc623ac9bf43f206e44bb"
   name = "github.com/flashmob/go-guerrilla"
@@ -25,12 +33,28 @@
   source = "github.com/athoune/go-guerrilla"
 
 [[projects]]
+  branch = "master"
+  digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
+  name = "github.com/google/go-querystring"
+  packages = ["query"]
+  pruneopts = "UT"
+  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+
+[[projects]]
   digest = "1:d867dfa6751c8d7a435821ad3b736310c2ed68945d05b50fb9d23aee0540c8cc"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   pruneopts = "UT"
   revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
   version = "v1.0.6"
+
+[[projects]]
+  digest = "1:557467971b7efad466910a14ee0597bc9360662befe682ecf069e9fe34124de1"
+  name = "github.com/xanzy/go-gitlab"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "109fd962a3876c6e486a5bc9507289d060e3c587"
+  version = "v0.9.0"
 
 [[projects]]
   branch = "master"
@@ -54,6 +78,13 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = ["github.com/flashmob/go-guerrilla"]
+  input-imports = [
+    "github.com/davecgh/go-spew/spew",
+    "github.com/flashmob/go-guerrilla",
+    "github.com/flashmob/go-guerrilla/backends",
+    "github.com/flashmob/go-guerrilla/mail",
+    "github.com/sirupsen/logrus",
+    "github.com/xanzy/go-gitlab",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
