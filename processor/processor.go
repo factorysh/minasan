@@ -1,6 +1,8 @@
 package processor
 
 import (
+	"net/textproto"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/flashmob/go-guerrilla/backends"
 	"github.com/flashmob/go-guerrilla/mail"
@@ -48,7 +50,7 @@ var MinasanProcessor = func() backends.Decorator {
 					   backends.NoSuchUser
 					*/
 					spew.Dump(e, e.Header, config)
-					targets, err := minasan.Targets(e.RcptTo[0].User)
+					targets, group, project, err := minasan.Targets(e.RcptTo[0].User)
 					if err != nil {
 						log.WithFields(log.Fields{
 							"error": err,
@@ -59,6 +61,8 @@ var MinasanProcessor = func() backends.Decorator {
 							backends.NoSuchUser
 					}
 					e.Values["targets"] = targets
+					e.Values["group"] = group
+					e.Values["project"] = project
 					// if no error:
 					return p.Process(e, task)
 				} else if task == backends.TaskSaveMail {
@@ -70,7 +74,10 @@ var MinasanProcessor = func() backends.Decorator {
 					// return backends.NewBackendResult(fmt.Sprintf("554 Error: %s", err)), err
 					// call the next processor in the chain
 					targets := e.Values["targets"].([]string)
-					err := minasan.BroadcastMail(targets, e)
+					err := minasan.BroadcastMail(targets, e, textproto.MIMEHeader{
+						"X-Factory-Group":   []string{e.Values["group"].(string)},
+						"X-Factory-Project": []string{e.Values["project"].(string)},
+					})
 					if err != nil {
 						log.WithFields(log.Fields{
 							"error":   err,
