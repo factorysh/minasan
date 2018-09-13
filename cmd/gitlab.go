@@ -12,8 +12,9 @@ func init() {
 }
 
 var gitlabCmd = &cobra.Command{
-	Use:   "gitlab",
+	Use:   "gitlab [group] [project]",
 	Short: "Ask gitlab wich mails are linked to a specific project",
+	Args:  cobra.MinimumNArgs(2),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := gitlab.NewClientFromEnv(nil)
