@@ -24,6 +24,7 @@ docker-build: bin
 	docker run --rm \
 	-v `pwd`:/go/src/gitlab.bearstech.com/factory/minasan \
 	-w /go/src/gitlab.bearstech.com/factory/minasan \
+	-u root \
 	bearstech/golang-dep \
 	make build
 	docker run --rm \
