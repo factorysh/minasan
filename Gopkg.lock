@@ -83,6 +83,7 @@
     "github.com/flashmob/go-guerrilla",
     "github.com/flashmob/go-guerrilla/backends",
     "github.com/flashmob/go-guerrilla/mail",
+    "github.com/flashmob/go-guerrilla/response",
     "github.com/sirupsen/logrus",
     "github.com/xanzy/go-gitlab",
   ]
