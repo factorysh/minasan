@@ -1,0 +1,17 @@
+stages:
+  - pull
+  - build
+
+pull:
+  stage: pull
+  script:
+    - make docker-pull
+
+build:
+  stage: build
+  cache:
+    paths:
+      - vendor
+      - .dep
+  script:
+    - make docker-build
