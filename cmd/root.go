@@ -10,6 +10,13 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "minasan",
 	Short: "Send mail to gitlab projects",
+	Long: `Environement variables:
+
+  SMTP_DOMAIN: example.com
+  GITLAB_DOMAIN: gitlab.example.com
+  GITLAB_PRIVATE_TOKEN: oppoipoioipipoipo
+  SMTP_OUT: localhost:25
+`,
 }
 
 func Execute() {

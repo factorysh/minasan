@@ -22,7 +22,7 @@ var serveCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		d := guerrilla.Daemon{}
 		d.SetConfig(guerrilla.AppConfig{
-			AllowedHosts: []string{"example.com"},
+			AllowedHosts: []string{os.Getenv("SMTP_DOMAIN")},
 			BackendConfig: backends.BackendConfig{
 				"save_process":         "HeadersParser|Debugger|Minasan",
 				"validate_process":     "Minasan",
