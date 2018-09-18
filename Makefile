@@ -19,6 +19,7 @@ mailhog:
 docker-pull:
 	docker pull bearstech/golang-dep
 	docker pull bearstech/upx
+	docker pull alpine:latest
 
 docker-build: bin
 	docker run --rm \
@@ -32,3 +33,14 @@ docker-build: bin
 	bearstech/upx \
 	upx minasan
 
+docker-static: bin
+	docker run --rm \
+	-e CGO_ENABLED=0 \
+	-v `pwd`:/go/src/gitlab.bearstech.com/factory/minasan \
+	-w /go/src/gitlab.bearstech.com/factory/minasan \
+	-u root \
+	bearstech/golang-dep \
+	make build
+
+image:
+	docker build -t minasan .
