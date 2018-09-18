@@ -63,7 +63,29 @@ Usage
 Minasan uses [go-guerilla](https://github.com/flashmob/go-guerrilla),
 [viper](https://github.com/spf13/viper) and [cobra](https://github.com/spf13/cobra)
 
-Go-guerilla receive and route mails, Cobra provides complex documented CLI options, Viper handles ENV and configuration files.
+Go-guerilla receives and routes incoming mails, Cobra provides complex documented CLI options, Viper handles ENV and configuration files.
+
+```
+$ ./bin/minasan -h
+Send mail to gitlab projects
+
+Usage:
+  minasan [command]
+
+Available Commands:
+  gitlab      Ask gitlab wich mails are linked to a specific project
+  help        Help about any command
+  serve       Listen as a SMTP server
+
+Flags:
+  -c, --config string                 Config file
+  -g, --gitlab_domain string          Gitlab domain (default "gitlab.example.com")
+  -t, --gitlab_private_token string   Gitlab private token
+  -h, --help                          help for minasan
+
+Use "minasan [command] --help" for more information about a command.
+
+```
 
 Licence
 -------
