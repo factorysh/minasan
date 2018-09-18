@@ -61,12 +61,6 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope, header 
 			return err
 		}
 		defer wc.Close()
-		/*
-			_, err = wc.Write(envelope.Data.Bytes())
-			if err != nil {
-				return err
-			}
-		*/
 		for k, v := range header {
 			envelope.Header[k] = v
 		}
