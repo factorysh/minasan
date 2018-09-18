@@ -19,7 +19,7 @@ type Minasan struct {
 }
 
 func (m *Minasan) Targets(mailName string) ([]string, string, string, error) {
-	blob := strings.Split(mailName, "-")
+	blob := strings.Split(mailName, ".")
 	if len(blob) != 2 {
 		return nil, "", "", fmt.Errorf("Bad mail name, can't guess group and project : %s", mailName)
 	}
