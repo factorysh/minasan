@@ -10,6 +10,14 @@
   revision = "d46933a94f05c6657d7b923fcf5ac563ee37ec79"
 
 [[projects]]
+  digest = "1:fed1f537c2f1269fe475a8556c393fe466641682d73ef8fd0491cd3aa1e47bad"
+  name = "github.com/certifi/gocertifi"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "deb3ae2ef2610fde3330947281941c562861188b"
+  version = "2018.01.18"
+
+[[projects]]
   branch = "dep"
   digest = "1:1ad63e04778eae38848f44772bfbb39bb8768114a3cbc623ac9bf43f206e44bb"
   name = "github.com/flashmob/go-guerrilla"
@@ -31,6 +39,14 @@
   pruneopts = "UT"
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
   version = "v1.4.7"
+
+[[projects]]
+  branch = "master"
+  digest = "1:64ef2c2f0f508690f06c1b009e1e3103441ce60c2db0323ff94d8d1c560ec10b"
+  name = "github.com/getsentry/raven-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "084a9de9eb0361fbd5ded14b55c84e5493a5d7f6"
 
 [[projects]]
   branch = "master"
@@ -85,9 +101,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4323c6f79178c6f811a0528b1b2eba03bad0cae33605636f1e38c8f907b5cbf7"
+  digest = "1:322662513592b08cabccfb42d0d4072ba3d7291d2dbff43edd4f7fb7552f7da7"
   name = "github.com/onrik/logrus"
-  packages = ["filename"]
+  packages = [
+    "filename",
+    "sentry",
+  ]
   pruneopts = "UT"
   revision = "ca0a758702be2ae04725ba88dcd27a71949faf33"
 
@@ -98,6 +117,14 @@
   pruneopts = "UT"
   revision = "c01d1270ff3e442a8a57cddc1c92dc1138598194"
   version = "v1.2.0"
+
+[[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   digest = "1:d867dfa6751c8d7a435821ad3b736310c2ed68945d05b50fb9d23aee0540c8cc"
@@ -217,6 +244,7 @@
     "github.com/flashmob/go-guerrilla/mail",
     "github.com/flashmob/go-guerrilla/response",
     "github.com/onrik/logrus/filename",
+    "github.com/onrik/logrus/sentry",
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
