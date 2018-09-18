@@ -87,5 +87,10 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope, header 
 			return err
 		}
 	}
+	log.WithFields(log.Fields{
+		"mails":   strings.Join(mails, ", "),
+		"subject": envelope.Subject,
+		"from":    envelope.MailFrom.String(),
+	}).Info("BroadcastMail")
 	return nil
 }

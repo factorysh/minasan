@@ -10,14 +10,6 @@
   revision = "d46933a94f05c6657d7b923fcf5ac563ee37ec79"
 
 [[projects]]
-  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
-  name = "github.com/davecgh/go-spew"
-  packages = ["spew"]
-  pruneopts = "UT"
-  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
-  version = "v1.1.1"
-
-[[projects]]
   branch = "dep"
   digest = "1:1ad63e04778eae38848f44772bfbb39bb8768114a3cbc623ac9bf43f206e44bb"
   name = "github.com/flashmob/go-guerrilla"
@@ -220,7 +212,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/davecgh/go-spew/spew",
     "github.com/flashmob/go-guerrilla",
     "github.com/flashmob/go-guerrilla/backends",
     "github.com/flashmob/go-guerrilla/mail",

@@ -1,9 +1,9 @@
 package processor
 
 import (
+	"fmt"
 	"net/textproto"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/flashmob/go-guerrilla/backends"
 	"github.com/flashmob/go-guerrilla/mail"
 	"github.com/flashmob/go-guerrilla/response"
@@ -49,7 +49,6 @@ var MinasanProcessor = func() backends.Decorator {
 					   response.Canned.FailNoSenderDataCmd),
 					   backends.NoSuchUser
 					*/
-					spew.Dump(e, e.Header, config)
 					targets, group, project, err := minasan.Targets(e.RcptTo[0].User)
 					if err != nil {
 						log.WithFields(log.Fields{
@@ -63,6 +62,7 @@ var MinasanProcessor = func() backends.Decorator {
 					e.Values["targets"] = targets
 					e.Values["group"] = group
 					e.Values["project"] = project
+					e.Values["gitlab_url"] = fmt.Sprintf("https://%s/%s/%s", config.GitlabDomain, group, project)
 					// if no error:
 					return p.Process(e, task)
 				} else if task == backends.TaskSaveMail {
@@ -75,8 +75,9 @@ var MinasanProcessor = func() backends.Decorator {
 					// call the next processor in the chain
 					targets := e.Values["targets"].([]string)
 					err := minasan.BroadcastMail(targets, e, textproto.MIMEHeader{
-						"X-Factory-Group":   []string{e.Values["group"].(string)},
-						"X-Factory-Project": []string{e.Values["project"].(string)},
+						"X-Gitlab-Group":   []string{e.Values["group"].(string)},
+						"X-Gitlab-Project": []string{e.Values["project"].(string)},
+						"X-Gitlab-Url":     []string{e.Values["gitlab_url"].(string)},
 					})
 					if err != nil {
 						log.WithFields(log.Fields{
