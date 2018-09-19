@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/factorysh/minasan/gitlab"
 	"github.com/spf13/cobra"
-	"gitlab.bearstech.com/factory/minasan/gitlab"
 )
 
 func init() {

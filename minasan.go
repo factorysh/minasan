@@ -3,10 +3,10 @@ package main
 import (
 	"os"
 
+	"github.com/factorysh/minasan/cmd"
 	"github.com/onrik/logrus/filename"
 	"github.com/onrik/logrus/sentry"
 	log "github.com/sirupsen/logrus"
-	"gitlab.bearstech.com/factory/minasan/cmd"
 )
 
 func main() {

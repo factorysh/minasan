@@ -23,8 +23,8 @@ docker-pull:
 
 docker-build: bin
 	docker run --rm \
-	-v `pwd`:/go/src/gitlab.bearstech.com/factory/minasan \
-	-w /go/src/gitlab.bearstech.com/factory/minasan \
+	-v `pwd`:/go/src/github.com/factorysh/minasan \
+	-w /go/src/github.com/factorysh/minasan \
 	-u root \
 	bearstech/golang-dep \
 	make build
@@ -36,8 +36,8 @@ docker-build: bin
 docker-static: bin
 	docker run --rm \
 	-e CGO_ENABLED=0 \
-	-v `pwd`:/go/src/gitlab.bearstech.com/factory/minasan \
-	-w /go/src/gitlab.bearstech.com/factory/minasan \
+	-v `pwd`:/go/src/github.com/factorysh/minasan \
+	-w /go/src/github.com/factorysh/minasan \
 	-u root \
 	bearstech/golang-dep \
 	make build
