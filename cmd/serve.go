@@ -7,17 +7,19 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/factorysh/minasan/metrics"
+	"github.com/factorysh/minasan/processor"
 	guerrilla "github.com/flashmob/go-guerrilla"
 	"github.com/flashmob/go-guerrilla/backends"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gitlab.bearstech.com/factory/minasan/processor"
 )
 
 var (
-	smtpDomain string
-	smtpIn     string
-	smtpOut    string
+	smtpDomain    string
+	smtpIn        string
+	smtpOut       string
+	metricsAdress string
 )
 
 func init() {
@@ -25,9 +27,11 @@ func init() {
 	pf.StringVarP(&smtpDomain, "smtp_domain", "d", "gitlab.example.com", "SMTP domain")
 	pf.StringVarP(&smtpIn, "smtp_in", "i", "127.0.0.1:2525", "SMTP input service")
 	pf.StringVarP(&smtpOut, "smtp_out", "o", "127.0.0.1:25", "SMTP relay")
+	pf.StringVarP(&metricsAdress, "metrics_address", "H", "127.0.0.1:8125", "Prometheus probe listening address")
 	viper.BindPFlag("smtp_domain", serveCmd.PersistentFlags().Lookup("smtp_domain"))
 	viper.BindPFlag("smtp_in", serveCmd.PersistentFlags().Lookup("smtp_in"))
 	viper.BindPFlag("smtp_out", serveCmd.PersistentFlags().Lookup("smtp_out"))
+	viper.BindPFlag("metrics_address", serveCmd.PersistentFlags().Lookup("metrics_address"))
 	rootCmd.AddCommand(serveCmd)
 }
 
@@ -36,6 +40,12 @@ var serveCmd = &cobra.Command{
 	Short: "Listen as a SMTP server",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ma := viper.GetString("metrics_address")
+		if ma != "" {
+			go metrics.ListenAndServe(ma)
+		} else {
+			log.Info("No prometheus probe")
+		}
 		d := guerrilla.Daemon{}
 		d.SetConfig(guerrilla.AppConfig{
 			AllowedHosts: []string{viper.GetString("smtp_domain")},

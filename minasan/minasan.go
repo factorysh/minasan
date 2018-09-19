@@ -8,9 +8,10 @@ import (
 	"net/smtp"
 	"net/textproto"
 
+	"github.com/factorysh/minasan/gitlab"
+	"github.com/factorysh/minasan/metrics"
 	"github.com/flashmob/go-guerrilla/mail"
 	log "github.com/sirupsen/logrus"
-	"gitlab.bearstech.com/factory/minasan/gitlab"
 )
 
 type Minasan struct {
@@ -80,6 +81,7 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope, header 
 		if err != nil {
 			return err
 		}
+		metrics.MailSentCounter.Inc()
 	}
 	log.WithFields(log.Fields{
 		"mails":   strings.Join(mails, ", "),

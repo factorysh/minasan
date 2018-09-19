@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/factorysh/minasan/metrics"
 	log "github.com/sirupsen/logrus"
 	gitlab "github.com/xanzy/go-gitlab"
 )
@@ -38,6 +39,9 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 				"error":    err,
 			},
 		).Error("MailsFromGroupProject")
+		if resp.StatusCode == 404 {
+			metrics.WrongProjectCounter.Inc()
+		}
 		return nil, err
 	}
 	mails := make(map[string]interface{})

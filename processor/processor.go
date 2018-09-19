@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"net/textproto"
 
+	"github.com/factorysh/minasan/gitlab"
+	"github.com/factorysh/minasan/metrics"
+	minasan_ "github.com/factorysh/minasan/minasan"
 	"github.com/flashmob/go-guerrilla/backends"
 	"github.com/flashmob/go-guerrilla/mail"
 	"github.com/flashmob/go-guerrilla/response"
 	log "github.com/sirupsen/logrus"
-	"gitlab.bearstech.com/factory/minasan/gitlab"
-	minasan_ "gitlab.bearstech.com/factory/minasan/minasan"
 )
 
 type myMinasanConfig struct {
@@ -49,6 +50,7 @@ var MinasanProcessor = func() backends.Decorator {
 					   response.Canned.FailNoSenderDataCmd),
 					   backends.NoSuchUser
 					*/
+					metrics.MailReceivedCounter.Inc()
 					targets, group, project, err := minasan.Targets(e.RcptTo[0].User)
 					if err != nil {
 						log.WithFields(log.Fields{
