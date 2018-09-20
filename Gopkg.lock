@@ -26,6 +26,14 @@
   version = "2018.01.18"
 
 [[projects]]
+  branch = "master"
+  digest = "1:2be1cbc0d5a130f4dcf97c3be5cd01882a3b73fb23d28a9c3bd214f75f1e5ac8"
+  name = "github.com/emersion/go-dkim"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "eb84b016af30c6e178bf9e0d0548c81ec884030f"
+
+[[projects]]
   branch = "dep"
   digest = "1:1ad63e04778eae38848f44772bfbb39bb8768114a3cbc623ac9bf43f206e44bb"
   name = "github.com/flashmob/go-guerrilla"
@@ -307,6 +315,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/emersion/go-dkim",
     "github.com/flashmob/go-guerrilla",
     "github.com/flashmob/go-guerrilla/backends",
     "github.com/flashmob/go-guerrilla/mail",
