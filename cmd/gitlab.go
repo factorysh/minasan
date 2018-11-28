@@ -3,12 +3,15 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/spf13/viper"
+
 	"github.com/factorysh/minasan/gitlab"
 	"github.com/spf13/cobra"
 )
 
 func init() {
 	rootCmd.AddCommand(gitlabCmd)
+	gitlabCmd.AddCommand(pingCmd)
 }
 
 var gitlabCmd = &cobra.Command{
@@ -17,7 +20,9 @@ var gitlabCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(2),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client := gitlab.NewClientFromEnv(nil)
+		client := gitlab.NewClientWithGitlabPrivateToken(nil,
+			viper.GetString("gitlab_domain"),
+			viper.GetString("gitlab_private_token"))
 		mails, err := client.MailsFromGroupProject(args[0], args[1])
 		if err != nil {
 			return err
@@ -25,6 +30,22 @@ var gitlabCmd = &cobra.Command{
 		for _, mail := range mails {
 			fmt.Println(mail)
 		}
+		return nil
+	},
+}
+
+var pingCmd = &cobra.Command{
+	Use:   "ping",
+	Short: "Ping your gitlab",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		client := gitlab.NewClientWithGitlabPrivateToken(nil,
+			viper.GetString("gitlab_domain"),
+			viper.GetString("gitlab_private_token"))
+		name, err := client.Ping()
+		if err != nil {
+			return err
+		}
+		fmt.Println(name)
 		return nil
 	},
 }

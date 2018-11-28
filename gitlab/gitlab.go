@@ -87,3 +87,12 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 	sort.Strings(smails)
 	return smails, nil
 }
+
+// Ping my name
+func (c *Client) Ping() (string, error) {
+	user, _, err := c.Users.CurrentUser()
+	if err != nil {
+		return "", err
+	}
+	return user.Name, nil
+}
