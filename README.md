@@ -113,6 +113,8 @@ API
 
 Minasan is a simple SMTP server, unauthenticated.
 
+Minasan 127.0.0.1:2525 and talks SMTP.
+
 You send a mail to `{group}.{project}@{domain}`. `domain` is the `-d` option, an arbitrary name, go-guerilla loves routing, and a domain is mandatory.
 
 Licence
