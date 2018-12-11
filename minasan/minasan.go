@@ -14,11 +14,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Minasan sends emails from Gitlab groups to a SMTPOut
 type Minasan struct {
 	Client  *gitlab.Client
 	SMTPOut string
 }
 
+// Targets return mails, group, project from a mail name
 func (m *Minasan) Targets(mailName string) ([]string, string, string, error) {
 	blob := strings.Split(mailName, ".")
 	if len(blob) != 2 {
@@ -43,7 +45,9 @@ func writeStuff(w io.Writer, blobs ...string) error {
 	return nil
 }
 
-func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope, header textproto.MIMEHeader) error {
+// BroadcastMail to all targets
+func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
+	header textproto.MIMEHeader) error {
 	// https://github.com/golang/go/wiki/SendingMail
 	for _, mail := range mails {
 		c, err := smtp.Dial(m.SMTPOut)
