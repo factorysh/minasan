@@ -87,6 +87,34 @@ Use "minasan [command] --help" for more information about a command.
 
 ```
 
+And for the `serve` command:
+```
+./bin/minasan serve -h
+Listen as a SMTP server
+
+Usage:
+  minasan serve [flags]
+
+Flags:
+  -h, --help                     help for serve
+  -H, --metrics_address string   Prometheus probe listening address (default "127.0.0.1:8125")
+  -d, --smtp_domain string       SMTP domain (default "gitlab.example.com")
+  -i, --smtp_in string           SMTP input service (default "127.0.0.1:2525")
+  -o, --smtp_out string          SMTP relay (default "127.0.0.1:25")
+
+Global Flags:
+  -c, --config string                 Config file
+  -g, --gitlab_domain string          Gitlab domain (default "gitlab.example.com")
+  -t, --gitlab_private_token string   Gitlab private token
+```
+
+API
+---
+
+Minasan is a simple SMTP server, unauthenticated.
+
+You send a mail to `{group}.{project}@{domain}`. `domain` is the `-d` option, an arbitrary name, go-guerilla loves routing, and a domain is mandatory.
+
 Licence
 -------
 
