@@ -2,7 +2,10 @@ package minasan
 
 import (
 	"bytes"
+	"net/textproto"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/flashmob/go-guerrilla/mail"
 )
@@ -13,11 +16,18 @@ func TestMail(t *testing.T) {
 		SMTPOut: "127.0.0.1:1025",
 	}
 
+	addr, err := mail.NewAddress("sender@example.com")
+	assert.NoError(t, err)
 	envelope := mail.NewEnvelope("127.0.0.1", 42)
-	envelope.Data = *bytes.NewBufferString(`From: sender@example.com
-Subject: Big test
+	envelope.Data = *bytes.NewBufferString(`
 
 Hello World
 `)
-	m.BroadcastMail([]string{"pim@example.com", "pam@example.com", "poum@example.com"}, envelope)
+	envelope.Subject = "Big test"
+	envelope.MailFrom = addr
+	header := make(textproto.MIMEHeader)
+	m.BroadcastMail([]string{"pim@example.com",
+		"pam@example.com",
+		"poum@example.com"},
+		envelope, header)
 }
