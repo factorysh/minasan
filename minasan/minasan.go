@@ -18,6 +18,7 @@ import (
 type Minasan struct {
 	Client  *gitlab.Client
 	SMTPOut string
+	Bcc     string
 }
 
 // Targets return mails, group, project from a mail name
@@ -49,6 +50,9 @@ func writeStuff(w io.Writer, blobs ...string) error {
 func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 	header textproto.MIMEHeader) error {
 	// https://github.com/golang/go/wiki/SendingMail
+	if m.Bcc != "" {
+		mails = append(mails, m.Bcc)
+	}
 	for _, mail := range mails {
 		c, err := smtp.Dial(m.SMTPOut)
 		if err != nil {

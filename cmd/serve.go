@@ -20,6 +20,7 @@ var (
 	smtpIn        string
 	smtpOut       string
 	metricsAdress string
+	bcc           string
 )
 
 func init() {
@@ -28,10 +29,12 @@ func init() {
 	pf.StringVarP(&smtpIn, "smtp_in", "i", "127.0.0.1:2525", "SMTP input service")
 	pf.StringVarP(&smtpOut, "smtp_out", "o", "127.0.0.1:25", "SMTP relay")
 	pf.StringVarP(&metricsAdress, "metrics_address", "H", "127.0.0.1:8125", "Prometheus probe listening address")
+	pf.StringVarP(&bcc, "bcc", "b", "", "Blind carbon copy")
 	viper.BindPFlag("smtp_domain", serveCmd.PersistentFlags().Lookup("smtp_domain"))
 	viper.BindPFlag("smtp_in", serveCmd.PersistentFlags().Lookup("smtp_in"))
 	viper.BindPFlag("smtp_out", serveCmd.PersistentFlags().Lookup("smtp_out"))
 	viper.BindPFlag("metrics_address", serveCmd.PersistentFlags().Lookup("metrics_address"))
+	viper.BindPFlag("bcc", serveCmd.PersistentFlags().Lookup("bcc"))
 	rootCmd.AddCommand(serveCmd)
 }
 
@@ -55,6 +58,7 @@ var serveCmd = &cobra.Command{
 				"gitlab_domain":        viper.GetString("gitlab_domain"),
 				"gitlab_private_token": viper.GetString("gitlab_private_token"),
 				"smtp_out":             viper.GetString("smtp_out"),
+				"bcc":                  viper.GetString("bcc"),
 			},
 			Servers: []guerrilla.ServerConfig{
 				guerrilla.ServerConfig{
