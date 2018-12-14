@@ -54,6 +54,10 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 		mails = append(mails, m.Bcc)
 	}
 	for _, mail := range mails {
+		if mail == "" {
+			log.Warning("Empty mail, it's a real bug, but I don't want to crash. FIXME")
+			continue
+		}
 		c, err := smtp.Dial(m.SMTPOut)
 		if err != nil {
 			log.WithField("smtpout", m.SMTPOut).WithError(err).Error("Can't dial SMTP")
