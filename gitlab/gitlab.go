@@ -41,7 +41,7 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 	}
 	mails := make(map[string]interface{})
 	for _, member := range groupMembers {
-		if member.AccessLevel < level {
+		if member.AccessLevel < level || member.State != "active" {
 			continue
 		}
 		user, resp, err := c.Users.GetUser(member.ID)
@@ -62,12 +62,18 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 		return nil, err
 	}
 	for _, member := range members {
-		if member.State == "active" && member.AccessLevel >= level {
-			if member.Email == "" {
-				log.WithField("member", member).Warning("Member with an empty email")
-			}
-			mails[member.Email] = true
+		if member.AccessLevel < level || member.State != "active" {
+			continue
 		}
+		user, resp, err := c.Users.GetUser(member.ID)
+		if err != nil {
+			log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
+			return nil, err
+		}
+		if user.Email == "" {
+			log.WithField("user", user).Warning("User with an empty email")
+		}
+		mails[user.Email] = true
 	}
 	smails := make([]string, len(mails))
 	i := 0
