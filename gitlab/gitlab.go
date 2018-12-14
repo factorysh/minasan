@@ -33,12 +33,7 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 	// It doesn't work with curl + private token, and go-gitlab seems to not implement it
 	groupMembers, resp, err := c.Groups.ListGroupMembers(group, &gitlab.ListGroupMembersOptions{})
 	if err != nil {
-		log.WithFields(
-			log.Fields{
-				"response": resp,
-				"error":    err,
-			},
-		).Error("MailsFromGroupProject")
+		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
 		if resp.StatusCode == 404 {
 			metrics.WrongProjectCounter.Inc()
 		}
@@ -51,13 +46,11 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 		}
 		user, resp, err := c.Users.GetUser(member.ID)
 		if err != nil {
-			log.WithFields(
-				log.Fields{
-					"response": resp,
-					"error":    err,
-				},
-			).Error("MailsFromGroupProject")
+			log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
 			return nil, err
+		}
+		if user.Email == "" {
+			log.WithField("user", user).Warning("User with an empty email")
 		}
 		mails[user.Email] = true
 	}
@@ -65,16 +58,14 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 	id := strings.Join([]string{group, project}, "/")
 	members, resp, err := c.ProjectMembers.ListProjectMembers(id, &gitlab.ListProjectMembersOptions{})
 	if err != nil {
-		log.WithFields(
-			log.Fields{
-				"response": resp,
-				"error":    err,
-			},
-		).Error("MailsFromGroupProject")
+		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
 		return nil, err
 	}
 	for _, member := range members {
 		if member.State == "active" && member.AccessLevel >= level {
+			if member.Email == "" {
+				log.WithField("member", member).Warning("Member with an empty email")
+			}
 			mails[member.Email] = true
 		}
 	}
