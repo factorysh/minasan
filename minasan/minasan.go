@@ -56,10 +56,7 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 	for _, mail := range mails {
 		c, err := smtp.Dial(m.SMTPOut)
 		if err != nil {
-			log.WithFields(log.Fields{
-				"smtpout": m.SMTPOut,
-				"error":   err,
-			})
+			log.WithField("smtpout", m.SMTPOut).WithError(err).Error("Can't dial SMTP")
 			return err
 		}
 		defer c.Close()
@@ -67,6 +64,10 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 		c.Rcpt(mail)
 		wc, err := c.Data()
 		if err != nil {
+			log.WithFields(log.Fields{
+				"mail": envelope.MailFrom.String(),
+				"rcpt": mail,
+			}).Error(err)
 			return err
 		}
 		defer wc.Close()
@@ -77,16 +78,19 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 			for _, value := range values {
 				err := writeStuff(wc, key, ": ", value, "\n")
 				if err != nil {
+					log.WithError(err).WithField(key, value).Error("Can't write header")
 					return err
 				}
 			}
 		}
 		err = writeStuff(wc, "Subject: ", envelope.Subject, "\n\n")
 		if err != nil {
+			log.WithError(err).WithField("subject", envelope.Subject).Error("Can't write Subject")
 			return err
 		}
 		_, err = io.Copy(wc, envelope.NewReader())
 		if err != nil {
+			log.WithError(err).Error("Can't copy envelope")
 			return err
 		}
 		metrics.MailSentCounter.Inc()
