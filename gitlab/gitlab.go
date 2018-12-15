@@ -23,10 +23,12 @@ func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string, p
 	return &Client{gl}
 }
 
+// NewClientFromEnv returns a new Client from environments
 func NewClientFromEnv(client *http.Client) *Client {
 	return NewClientWithGitlabPrivateToken(client, os.Getenv("GITLAB_DOMAIN"), os.Getenv("GITLAB_PRIVATE_TOKEN"))
 }
 
+// MailsFromGroupProject returns distincts mails from a project and its group
 func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) {
 	const level = 40
 	// Works for gitlab 9, but documentation talks about https://docs.gitlab.com/ce/api/members.html#list-all-members-of-a-group-or-project-including-inherited-members
@@ -46,11 +48,12 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 		}
 		user, resp, err := c.Users.GetUser(member.ID)
 		if err != nil {
-			log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
+			log.WithField("response", resp).WithError(err).Error("MailsFromGroup")
 			return nil, err
 		}
+		log.WithField("name", user.Name).WithField("email", user.Email).WithField("group", group).Debug("Users from group")
 		if user.Email == "" {
-			log.WithField("user", user).Warning("User with an empty email")
+			log.WithField("name", user.Name).Warning("User with an empty email")
 		}
 		mails[user.Email] = true
 	}
@@ -58,7 +61,7 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 	id := strings.Join([]string{group, project}, "/")
 	members, resp, err := c.ProjectMembers.ListProjectMembers(id, &gitlab.ListProjectMembersOptions{})
 	if err != nil {
-		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
+		log.WithField("response", resp).WithError(err).Error("ListProjectMembers")
 		return nil, err
 	}
 	for _, member := range members {
@@ -67,11 +70,12 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 		}
 		user, resp, err := c.Users.GetUser(member.ID)
 		if err != nil {
-			log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
+			log.WithField("response", resp).WithError(err).Error("MailsFromProject")
 			return nil, err
 		}
+		log.WithField("name", user.Name).WithField("email", user.Email).WithField("project", project).Debug("Users from project")
 		if user.Email == "" {
-			log.WithField("user", user).Warning("User with an empty email")
+			log.WithField("name", user.Name).Warning("Member with an empty email")
 		}
 		mails[user.Email] = true
 	}
