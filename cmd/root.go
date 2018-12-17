@@ -55,7 +55,7 @@ func init() {
 	pf.StringVarP(&gitlabDomain, "gitlab_domain", "g", "gitlab.example.com", "Gitlab domain")
 	pf.StringVarP(&gitlabPrivateToken, "gitlab_private_token", "t", "", "Gitlab private token")
 	pf.StringVarP(&configFile, "config", "c", "", "Config file")
-	pf.BoolVarP(&debug, "debug", "d", false, "More verbose")
+	pf.BoolVarP(&debug, "verbose", "V", false, "More verbose")
 	viper.BindPFlag("gitlab_domain", rootCmd.PersistentFlags().Lookup("gitlab_domain"))
 	viper.BindPFlag("gitlab_private_token", rootCmd.PersistentFlags().Lookup("gitlab_private_token"))
 	viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config"))
