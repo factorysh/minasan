@@ -18,6 +18,7 @@ type myMinasanConfig struct {
 	GitlabPrivateToken string `json:"gitlab_private_token,omitempty"`
 	SMTPOut            string `json:"smtp_out,omitempty"`
 	Bcc                string `json:"bcc",omitempty`
+	SenderDomain       string `json:"sender_domain",omitempty`
 }
 
 // The MyFoo decorator [enter what it does]
@@ -34,6 +35,7 @@ var MinasanProcessor = func() backends.Decorator {
 		config = bcfg.(*myMinasanConfig)
 		minasan.SMTPOut = config.SMTPOut
 		minasan.Bcc = config.Bcc
+		minasan.SenderDomain = config.SenderDomain
 		minasan.Client = gitlab.NewClientWithGitlabPrivateToken(nil, config.GitlabDomain, config.GitlabPrivateToken)
 		return nil
 	})

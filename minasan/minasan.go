@@ -16,9 +16,10 @@ import (
 
 // Minasan sends emails from Gitlab groups to a SMTPOut
 type Minasan struct {
-	Client  *gitlab.Client
-	SMTPOut string
-	Bcc     string
+	Client       *gitlab.Client
+	SMTPOut      string
+	Bcc          string
+	SenderDomain string
 }
 
 // Targets return mails, group, project from a mail name
@@ -64,7 +65,9 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 			return err
 		}
 		defer c.Close()
-		c.Mail(envelope.MailFrom.String())
+		from := envelope.MailFrom.String()
+		from = fmt.Sprintf("minasan+%s@%s", strings.Split(from, "@")[0], m.SenderDomain)
+		c.Mail(from)
 		c.Rcpt(mail)
 		wc, err := c.Data()
 		if err != nil {
@@ -75,10 +78,7 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 			return err
 		}
 		defer wc.Close()
-		for k, v := range header {
-			envelope.Header[k] = v
-		}
-		for key, values := range envelope.Header {
+		for key, values := range header {
 			for _, value := range values {
 				err := writeStuff(wc, key, ": ", value, "\n")
 				if err != nil {
@@ -86,11 +86,6 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 					return err
 				}
 			}
-		}
-		err = writeStuff(wc, "Subject: ", envelope.Subject, "\n\n")
-		if err != nil {
-			log.WithError(err).WithField("subject", envelope.Subject).Error("Can't write Subject")
-			return err
 		}
 		_, err = io.Copy(wc, envelope.NewReader())
 		if err != nil {
