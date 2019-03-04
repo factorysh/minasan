@@ -16,10 +16,11 @@ clean:
 mailhog:
 	docker run --rm -p 1025:1025 -p 8025:8025 -d mailhog/mailhog
 
-docker-pull:
+pull:
 	docker pull bearstech/golang-dep
 	docker pull bearstech/upx
 	docker pull alpine:latest
+	docker pull mailhog/mailhog
 
 docker-build: bin
 	docker run --rm \
