@@ -13,7 +13,7 @@ import (
 // You need `make mailhog` before running this test
 func TestMail(t *testing.T) {
 	m := &Minasan{
-		SMTPOut: "127.0.0.1:1025",
+		SMTPOut: "0.0.0.0:1025",
 	}
 
 	addr, err := mail.NewAddress("Sender <sender@example.com>")
