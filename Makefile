@@ -1,7 +1,10 @@
-
+GIT_VERSION?=$(shell git describe --tags --always --abbrev=42 --dirty)
 
 build: bin vendor
-	go build -o bin/minasan .
+	go build \
+		-o bin/minasan \
+		-ldflags "-X github.com/factorysh/minasan/version.version=$(GIT_VERSION)" \
+		.
 
 bin:
 	mkdir -p bin
