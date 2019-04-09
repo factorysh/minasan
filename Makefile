@@ -45,3 +45,6 @@ docker-static: bin
 
 image:
 	docker build -t minasan .
+
+test:
+	go test -v github.com/factorysh/minasan/minasan
