@@ -22,6 +22,7 @@ var (
 	metricsAdress string
 	bcc           string
 	senderDomain  string
+	returnPath    string
 )
 
 func init() {
@@ -32,12 +33,14 @@ func init() {
 	pf.StringVarP(&metricsAdress, "metrics_address", "H", "127.0.0.1:8125", "Prometheus probe listening address")
 	pf.StringVarP(&bcc, "bcc", "b", "", "Blind carbon copy")
 	pf.StringVarP(&senderDomain, "sender_domain", "s", "example.com", "Sender domain, for the smtp relay, admin@{sender_domain} will be used")
+	pf.StringVarP(&returnPath, "return_path", "r", "admin@example.com", "Return path")
 	viper.BindPFlag("smtp_domain", serveCmd.PersistentFlags().Lookup("smtp_domain"))
 	viper.BindPFlag("smtp_in", serveCmd.PersistentFlags().Lookup("smtp_in"))
 	viper.BindPFlag("smtp_out", serveCmd.PersistentFlags().Lookup("smtp_out"))
 	viper.BindPFlag("metrics_address", serveCmd.PersistentFlags().Lookup("metrics_address"))
 	viper.BindPFlag("bcc", serveCmd.PersistentFlags().Lookup("bcc"))
 	viper.BindPFlag("sender_domain", serveCmd.PersistentFlags().Lookup("sender_domain"))
+	viper.BindPFlag("return_path", serveCmd.PersistentFlags().Lookup("return_path"))
 	rootCmd.AddCommand(serveCmd)
 }
 
@@ -63,6 +66,7 @@ var serveCmd = &cobra.Command{
 				"smtp_out":             viper.GetString("smtp_out"),
 				"bcc":                  viper.GetString("bcc"),
 				"sender_domain":        viper.GetString("sender_domain"),
+				"return_path":          viper.GetString("return_path"),
 			},
 			Servers: []guerrilla.ServerConfig{
 				guerrilla.ServerConfig{

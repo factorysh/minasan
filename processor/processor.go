@@ -19,9 +19,10 @@ type myMinasanConfig struct {
 	SMTPOut            string `json:"smtp_out,omitempty"`
 	Bcc                string `json:"bcc",omitempty`
 	SenderDomain       string `json:"sender_domain",omitempty`
+	ReturnPath         string `json:"return_path",omitempty`
 }
 
-// The MyFoo decorator [enter what it does]
+// MinasanProcessor send mails to gitlab's pals
 var MinasanProcessor = func() backends.Decorator {
 	config := &myMinasanConfig{}
 	minasan := &minasan_.Minasan{}
@@ -80,10 +81,19 @@ var MinasanProcessor = func() backends.Decorator {
 					// return backends.NewBackendResult(fmt.Sprintf("554 Error: %s", err)), err
 					// call the next processor in the chain
 					targets := e.Values["targets"].([]string)
+					r, ok := e.Values["return-path"]
+					var rp string
+					if ok {
+						rp = r.(string)
+						delete(e.Values, "return-path")
+					} else {
+						rp = config.ReturnPath
+					}
 					err := minasan.BroadcastMail(targets, e, textproto.MIMEHeader{
 						"X-Gitlab-Group":   []string{e.Values["group"].(string)},
 						"X-Gitlab-Project": []string{e.Values["project"].(string)},
 						"X-Gitlab-Url":     []string{e.Values["gitlab_url"].(string)},
+						"Return-Path":      []string{rp},
 					})
 					if err != nil {
 						log.WithFields(log.Fields{
