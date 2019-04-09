@@ -1,3 +1,5 @@
 vendor
 bin
 .env
+config.yml
+
