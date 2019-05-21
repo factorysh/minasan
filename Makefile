@@ -1,6 +1,7 @@
 GIT_VERSION?=$(shell git describe --tags --always --abbrev=42 --dirty)
 
-build: bin vendor
+build: bin
+	dep ensure
 	go build \
 		-o bin/minasan \
 		-ldflags "-X github.com/factorysh/minasan/version.version=$(GIT_VERSION)" \
@@ -9,9 +10,6 @@ build: bin vendor
 bin:
 	mkdir -p bin
 	chmod 777 bin
-
-vendor:
-	dep ensure
 
 clean:
 	rm -rf bin vendor
