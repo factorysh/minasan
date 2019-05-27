@@ -11,6 +11,9 @@ bin:
 	mkdir -p bin
 	chmod 777 bin
 
+vendor:
+	mkdir -p vendor
+
 clean:
 	rm -rf bin vendor
 
@@ -23,7 +26,7 @@ pull:
 	docker pull alpine:latest
 	docker pull mailhog/mailhog
 
-docker-build: bin
+docker-build: bin vendor
 	docker run --rm \
 	-v `pwd`:/go/src/github.com/factorysh/minasan \
 	-w /go/src/github.com/factorysh/minasan \
@@ -35,7 +38,7 @@ docker-build: bin
 	bearstech/upx \
 	upx minasan
 
-docker-static: bin
+docker-static: bin vendor
 	docker run --rm \
 	-e CGO_ENABLED=0 \
 	-v `pwd`:/go/src/github.com/factorysh/minasan \
@@ -47,5 +50,5 @@ docker-static: bin
 image:
 	docker build -t minasan .
 
-test:
+test: vendor
 	go test -v github.com/factorysh/minasan/minasan
