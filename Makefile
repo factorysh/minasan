@@ -28,15 +28,17 @@ pull:
 
 docker-build: bin vendor
 	docker run --rm \
-	-v `pwd`:/go/src/github.com/factorysh/minasan \
-	-w /go/src/github.com/factorysh/minasan \
-	-u root \
-	bearstech/golang-dep \
-	make build
+		-v ~/.cache:/.cache \
+		-v `pwd`:/go/src/github.com/factorysh/minasan \
+		-w /go/src/github.com/factorysh/minasan \
+		-u `id -u` \
+		bearstech/golang-dep \
+		make build
 	docker run --rm \
-	-v `pwd`/bin:/upx \
-	bearstech/upx \
-	upx minasan
+		-v `pwd`/bin:/upx \
+		-u `id -u` \
+		bearstech/upx \
+		upx minasan
 
 docker-static: bin vendor
 	docker run --rm \
