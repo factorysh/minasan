@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	_blacklist "github.com/factorysh/minasan/blacklist"
 	"github.com/factorysh/minasan/metrics"
 	"github.com/factorysh/minasan/processor"
 	guerrilla "github.com/flashmob/go-guerrilla"
@@ -23,6 +24,7 @@ var (
 	bcc           string
 	senderDomain  string
 	returnPath    string
+	blacklist     string
 )
 
 func init() {
@@ -32,6 +34,7 @@ func init() {
 	pf.StringVarP(&smtpOut, "smtp_out", "o", "127.0.0.1:25", "SMTP relay")
 	pf.StringVarP(&metricsAdress, "metrics_address", "H", "127.0.0.1:8125", "Prometheus probe listening address")
 	pf.StringVarP(&bcc, "bcc", "b", "", "Blind carbon copy")
+	pf.StringVarP(&blacklist, "blacklist", "B", "", "Blacklist file")
 	pf.StringVarP(&senderDomain, "sender_domain", "s", "example.com", "Sender domain, for the smtp relay, admin@{sender_domain} will be used")
 	pf.StringVarP(&returnPath, "return_path", "r", "admin@example.com", "Return path")
 	viper.BindPFlag("smtp_domain", serveCmd.PersistentFlags().Lookup("smtp_domain"))
@@ -39,6 +42,7 @@ func init() {
 	viper.BindPFlag("smtp_out", serveCmd.PersistentFlags().Lookup("smtp_out"))
 	viper.BindPFlag("metrics_address", serveCmd.PersistentFlags().Lookup("metrics_address"))
 	viper.BindPFlag("bcc", serveCmd.PersistentFlags().Lookup("bcc"))
+	viper.BindPFlag("blacklist", serveCmd.PersistentFlags().Lookup("blacklist"))
 	viper.BindPFlag("sender_domain", serveCmd.PersistentFlags().Lookup("sender_domain"))
 	viper.BindPFlag("return_path", serveCmd.PersistentFlags().Lookup("return_path"))
 	rootCmd.AddCommand(serveCmd)
@@ -54,6 +58,13 @@ var serveCmd = &cobra.Command{
 			go metrics.ListenAndServe(ma)
 		} else {
 			log.Info("No prometheus probe")
+		}
+		if blacklist != "" {
+			err := _blacklist.ReadBlacklistFile(blacklist)
+			if err != nil {
+				return err
+			}
+			log.Info("Using Blacklist ", blacklist, " ", _blacklist.Lenght(), " mails")
 		}
 		d := guerrilla.Daemon{}
 		d.SetConfig(guerrilla.AppConfig{
