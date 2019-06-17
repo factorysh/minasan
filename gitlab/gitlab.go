@@ -36,16 +36,22 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 	// It doesn't work with curl + private token, and go-gitlab seems to not implement it
 	groupMembers, resp, err := c.Groups.ListGroupMembers(group, &gitlab.ListGroupMembersOptions{})
 	if err != nil {
-		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
-		if resp != nil && resp.StatusCode == 404 {
-			metrics.WrongProjectCounter.Inc()
+		log.WithField("response", resp).WithError(err).Warning("MailsFromGroupProject")
+		if resp != nil {
+			if resp.StatusCode == 404 {
+				metrics.WrongProjectCounter.Inc()
+			}
+		} else {
+			log.Warning("response is null")
 		}
 		// Gitlab is unavailable, send a last chance email
 		lastChanceEmail := viper.GetString("last_chance_mail")
 		if lastChanceEmail != "" {
 			email := []string{lastChanceEmail}
+			log.Info("Sending last chance email")
 			return email, nil
 		}
+		log.Warning("last_chance_mail is not set")
 		return nil, err
 	}
 	mails := make(map[string]interface{})
