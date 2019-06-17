@@ -42,8 +42,11 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 		}
 		// Gitlab is unavailable, send a last chance email
 		lastChanceEmail := viper.GetString("last_chance_mail")
-		email := []string{lastChanceEmail}
-		return email, nil
+		if lastChanceEmail != "" {
+			email := []string{lastChanceEmail}
+			return email, nil
+		}
+		return nil, err
 	}
 	mails := make(map[string]interface{})
 	for _, member := range groupMembers {
