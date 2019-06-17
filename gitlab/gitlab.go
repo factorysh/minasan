@@ -8,6 +8,7 @@ import (
 
 	"github.com/factorysh/minasan/metrics"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	gitlab "github.com/xanzy/go-gitlab"
 )
 
@@ -36,10 +37,13 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 	groupMembers, resp, err := c.Groups.ListGroupMembers(group, &gitlab.ListGroupMembersOptions{})
 	if err != nil {
 		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
-		if resp.StatusCode == 404 {
+		if resp != nil && resp.StatusCode == 404 {
 			metrics.WrongProjectCounter.Inc()
 		}
-		return nil, err
+		// Gitlab is unavailable, send a last chance email
+		lastChanceEmail := viper.GetString("last_chance_mail")
+		email := []string{lastChanceEmail}
+		return email, nil
 	}
 	mails := make(map[string]interface{})
 	for _, member := range groupMembers {

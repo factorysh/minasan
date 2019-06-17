@@ -73,7 +73,6 @@ var MinasanProcessor = func() backends.Decorator {
 					// if no error:
 					return p.Process(e, task)
 				} else if task == backends.TaskSaveMail {
-
 					// if you want your processor to do some processing after
 					// receiving the email, continue here.
 					// if want to stop processing, return

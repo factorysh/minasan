@@ -75,10 +75,8 @@ var serveCmd = &cobra.Command{
 				},
 			},
 		})
-
 		d.AddProcessor("Minasan", processor.MinasanProcessor)
 		err := d.Start()
-
 		if err == nil {
 			log.WithFields(log.Fields{
 				"gitlab_domain": viper.GetString("gitlab_domain"),
