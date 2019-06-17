@@ -2,17 +2,30 @@ package blacklist
 
 import (
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 )
 
 var blacklist map[string]interface{}
 
 func Add(mail string) {
+	if blacklist == nil {
+		blacklist = make(map[string]interface{})
+	}
 	blacklist[mail] = true
 }
 
 func IsBlackListed(mail string) bool {
 	_, ok := blacklist[mail]
+	if !ok {
+		// Search for wildcards
+		for key, value := range blacklist {
+			matched, _ := filepath.Match(key, mail)
+			if matched && value == true {
+				ok = true
+			}
+		}
+	}
 	return ok
 }
 
