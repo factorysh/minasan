@@ -8,6 +8,7 @@ import (
 	"net/smtp"
 	"net/textproto"
 
+	"github.com/factorysh/minasan/blacklist"
 	"github.com/factorysh/minasan/gitlab"
 	"github.com/factorysh/minasan/metrics"
 	"github.com/flashmob/go-guerrilla/mail"
@@ -57,6 +58,10 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 	for _, mail := range mails {
 		if mail == "" {
 			log.Warning("Empty mail, it's a real bug, but I don't want to crash. FIXME")
+			continue
+		}
+		if blacklist.IsBlackListed(mail) {
+			log.Info("Blacklisted mail: ", mail)
 			continue
 		}
 		c, err := smtp.Dial(m.SMTPOut)
