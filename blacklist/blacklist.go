@@ -1,9 +1,9 @@
 package blacklist
 
 import (
-	"bytes"
+	"bufio"
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -31,29 +31,25 @@ func IsBlackListed(mail string) bool {
 	return ok
 }
 
-func AddIfValid(line string) {
-	if len(line) > 0 && !strings.HasPrefix(line, "#") {
-		Add(line)
-	}
-}
-
 func ReadBlacklistFile(path string) error {
-	raw, err := ioutil.ReadFile(path)
+	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	buffer := bytes.NewBuffer(raw)
+	defer file.Close()
+	reader := bufio.NewReader(file)
 	for {
-		line, err := buffer.ReadString('\n')
-		line = strings.TrimSpace(line)
-		if err == io.EOF {
-			AddIfValid(line)
-			break
-		}
-		if err != nil {
+		line, err := reader.ReadString('\n')
+		if err != nil && err != io.EOF {
 			return err
 		}
-		AddIfValid(line)
+		line = strings.TrimSpace(line)
+		if len(line) > 0 && !strings.HasPrefix(line, "#") {
+			Add(line)
+		}
+		if err == io.EOF {
+			break
+		}
 	}
 	return nil
 }
