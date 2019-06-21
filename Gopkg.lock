@@ -143,6 +143,14 @@
   revision = "05335c5abaa99d4c7a3f36df162b483106ef38a8"
 
 [[projects]]
+  digest = "1:808cdddf087fb64baeae67b8dfaee2069034d9704923a3cb8bd96a995421a625"
+  name = "github.com/patrickmn/go-cache"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0"
+  version = "v2.1.0"
+
+[[projects]]
   digest = "1:e0f50a07c0def90588d69f77178712c6fdc67eb6576365f551cce98b44b501bf"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
@@ -334,6 +342,7 @@
     "github.com/flashmob/go-guerrilla/response",
     "github.com/onrik/logrus/filename",
     "github.com/onrik/logrus/sentry",
+    "github.com/patrickmn/go-cache",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promauto",
     "github.com/prometheus/client_golang/prometheus/promhttp",
