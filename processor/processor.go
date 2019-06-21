@@ -20,6 +20,7 @@ type myMinasanConfig struct {
 	Bcc                string `json:"bcc",omitempty`
 	SenderDomain       string `json:"sender_domain",omitempty`
 	ReturnPath         string `json:"return_path",omitempty`
+	LastChanceMail     string `json:"last_chance_mail"`
 }
 
 // MinasanProcessor send mails to gitlab's pals
@@ -56,7 +57,7 @@ var MinasanProcessor = func() backends.Decorator {
 					   backends.NoSuchUser
 					*/
 					metrics.MailReceivedCounter.Inc()
-					targets, group, project, err := minasan.Targets(e.RcptTo[0].User)
+					targets, group, project, err := minasan.Targets(e.RcptTo[0].User, config.LastChanceMail)
 					if err != nil {
 						log.WithFields(log.Fields{
 							"error": err,

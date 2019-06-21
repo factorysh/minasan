@@ -23,7 +23,7 @@ var gitlabCmd = &cobra.Command{
 		client := gitlab.NewClientWithGitlabPrivateToken(nil,
 			viper.GetString("gitlab_domain"),
 			viper.GetString("gitlab_private_token"))
-		mails, err := client.MailsFromGroupProject(args[0], args[1])
+		mails, err := client.MailsFromGroupProject(args[0], args[1], viper.GetString("last_chance_mail"))
 		if err != nil {
 			return err
 		}

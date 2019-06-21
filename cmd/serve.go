@@ -63,6 +63,7 @@ var serveCmd = &cobra.Command{
 				"validate_process":     "Minasan",
 				"gitlab_domain":        viper.GetString("gitlab_domain"),
 				"gitlab_private_token": viper.GetString("gitlab_private_token"),
+				"last_chance_mail":     viper.GetString("last_chance_mail"),
 				"smtp_out":             viper.GetString("smtp_out"),
 				"bcc":                  viper.GetString("bcc"),
 				"sender_domain":        viper.GetString("sender_domain"),

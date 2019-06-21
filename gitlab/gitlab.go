@@ -8,7 +8,6 @@ import (
 
 	"github.com/factorysh/minasan/metrics"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	gitlab "github.com/xanzy/go-gitlab"
 )
 
@@ -30,7 +29,7 @@ func NewClientFromEnv(client *http.Client) *Client {
 }
 
 // MailsFromGroupProject returns distincts mails from a project and its group
-func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) {
+func (c *Client) MailsFromGroupProject(group, project, lastChanceMail string) ([]string, error) {
 	const level = 40
 	// Works for gitlab 9, but documentation talks about https://docs.gitlab.com/ce/api/members.html#list-all-members-of-a-group-or-project-including-inherited-members
 	// It doesn't work with curl + private token, and go-gitlab seems to not implement it
@@ -45,9 +44,8 @@ func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) 
 			log.Warning("response is null")
 		}
 		// Gitlab is unavailable, send a last chance email
-		lastChanceEmail := viper.GetString("last_chance_mail")
-		if lastChanceEmail != "" {
-			email := []string{lastChanceEmail}
+		if lastChanceMail != "" {
+			email := []string{lastChanceMail}
 			log.Info("Sending last chance email")
 			return email, nil
 		}
