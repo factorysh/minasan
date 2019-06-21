@@ -5,10 +5,9 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"time"
 
+	"github.com/factorysh/minasan/cache"
 	"github.com/factorysh/minasan/metrics"
-	"github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
 	gitlab "github.com/xanzy/go-gitlab"
 )
@@ -18,18 +17,13 @@ type Client struct {
 	*gitlab.Client
 }
 
-var clientCache = cache.New(5*time.Minute, 10*time.Minute)
-var groupMembersCache = cache.New(5*time.Minute, 60*time.Minute)
+// var groupMembersCache = gocache.New(5*time.Minute, 60*time.Minute)
+var groupMembersCache = cache.NewCache()
 
 // NewClientWithGitlabPrivateToken returns a new Client with a Gitlab's private token
 func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string, privateToken string) *Client {
-	cached, found := clientCache.Get(gitlabDomain)
-	if found {
-		return &Client{cached.(*gitlab.Client)}
-	}
 	gl := gitlab.NewClient(client, privateToken)
 	gl.SetBaseURL("https://" + gitlabDomain + "/api/v4")
-	clientCache.SetDefault(gitlabDomain, gl)
 	return &Client{gl}
 }
 
@@ -38,30 +32,29 @@ func NewClientFromEnv(client *http.Client) *Client {
 	return NewClientWithGitlabPrivateToken(client, os.Getenv("GITLAB_DOMAIN"), os.Getenv("GITLAB_PRIVATE_TOKEN"))
 }
 
+func (c *Client) GetGitlabGroupMembers(key string) (interface{}, error) {
+	groupMembers, resp, err := c.Groups.ListGroupMembers(key, &gitlab.ListGroupMembersOptions{})
+	if err != nil {
+		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
+		if resp.StatusCode == 404 {
+			metrics.WrongProjectCounter.Inc()
+		}
+		return nil, err
+	}
+	return groupMembers, nil
+}
+
+func (c *Client) TestCallback(key string) (interface{}, error) {
+	return []string{"test", "blabla", key}, nil
+}
+
 // MailsFromGroupProject returns distincts mails from a project and its group
 func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) {
 	const level = 40
 
-	// Get the group members in the cache
-	groupMembers, expTime, found := groupMembersCache.GetWithExpiration(group)
-	// If the groupMembers was not found in the cache or found but expired
-	// Else -> continue with the cache
-	if !found || (found && cache.Item{groupMembers, expTime.Unix()}.Expired()) {
-		// Works for gitlab 9, but documentation talks about https://docs.gitlab.com/ce/api/members.html#list-all-members-of-a-group-or-project-including-inherited-members
-		// It doesn't work with curl + private token, and go-gitlab seems to not implement it
-		groupMembers, resp, err := c.Groups.ListGroupMembers(group, &gitlab.ListGroupMembersOptions{})
-		// If gitlab is unavailable and the groupMembers was not found in the cache -> error
-		// Else if gitlab is available -> put the new groupMembers in the cache
-		// Else -> continue with the expired cache
-		if err != nil && !found {
-			log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
-			if resp.StatusCode == 404 {
-				metrics.WrongProjectCounter.Inc()
-			}
-			return nil, err
-		} else if err == nil {
-			groupMembersCache.SetDefault(group, groupMembers)
-		}
+	groupMembers, err := groupMembersCache.GetWithCallback(group, c.GetGitlabGroupMembers)
+	if err != nil {
+		return nil, err
 	}
 	mails := make(map[string]interface{})
 	for _, member := range groupMembers.([]*gitlab.GroupMember) {
