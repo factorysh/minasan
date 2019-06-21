@@ -16,21 +16,22 @@ import (
 
 // Minasan sends emails from Gitlab groups to a SMTPOut
 type Minasan struct {
-	Client       *gitlab.Client
-	SMTPOut      string
-	Bcc          string
-	SenderDomain string
+	Client         *gitlab.Client
+	SMTPOut        string
+	Bcc            string
+	SenderDomain   string
+	LastChanceMail string
 }
 
 // Targets return mails, group, project from a mail name
-func (m *Minasan) Targets(mailName, lastChanceMail string) ([]string, string, string, error) {
+func (m *Minasan) Targets(mailName string) ([]string, string, string, error) {
 	blob := strings.Split(mailName, ".")
 	if len(blob) != 2 {
 		return nil, "", "", fmt.Errorf("Bad mail name, can't guess group and project : %s", mailName)
 	}
 	group := blob[0]
 	project := blob[1]
-	targets, err := m.Client.MailsFromGroupProject(group, project, lastChanceMail)
+	targets, err := m.Client.MailsFromGroupProject(group, project, m.LastChanceMail)
 	if err != nil {
 		return nil, "", "", err
 	}

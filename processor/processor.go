@@ -38,6 +38,7 @@ var MinasanProcessor = func() backends.Decorator {
 		minasan.SMTPOut = config.SMTPOut
 		minasan.Bcc = config.Bcc
 		minasan.SenderDomain = config.SenderDomain
+		minasan.LastChanceMail = config.LastChanceMail
 		minasan.Client = gitlab.NewClientWithGitlabPrivateToken(nil, config.GitlabDomain, config.GitlabPrivateToken)
 		return nil
 	})
@@ -57,7 +58,7 @@ var MinasanProcessor = func() backends.Decorator {
 					   backends.NoSuchUser
 					*/
 					metrics.MailReceivedCounter.Inc()
-					targets, group, project, err := minasan.Targets(e.RcptTo[0].User, config.LastChanceMail)
+					targets, group, project, err := minasan.Targets(e.RcptTo[0].User)
 					if err != nil {
 						log.WithFields(log.Fields{
 							"error": err,
