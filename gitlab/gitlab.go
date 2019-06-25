@@ -17,8 +17,6 @@ type Client struct {
 	*gitlab.Client
 }
 
-// var groupMembersCache = cache.NewCache()
-
 // NewClientWithGitlabPrivateToken returns a new Client with a Gitlab's private token
 func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string, privateToken string) *Client {
 	gl := gitlab.NewClient(client, privateToken)
@@ -43,18 +41,11 @@ func (c *Client) GetGitlabGroupMembers(key string) (interface{}, error) {
 	return groupMembers, nil
 }
 
-// func (c *Client) TestCallback(key string) (interface{}, error) {
-// 	return []string{"test", "blabla", key}, nil
-// 	// return nil, fmt.Errorf("error")
-// }
-
 // MailsFromGroupProject returns distincts mails from a project and its group
 func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) {
 	const level = 40
 
 	groupMembers, err := cache.GetWithCallback(group, c.GetGitlabGroupMembers)
-	// groupMembers, err := cache.GetWithCallback(group, c.TestCallback)
-	// groupMembers, err := groupMembersCache.GetWithCallback(group, c.GetGitlabGroupMembers)
 	if err != nil && groupMembers == nil {
 		return nil, err
 	}
