@@ -17,8 +17,7 @@ type Client struct {
 	*gitlab.Client
 }
 
-// var groupMembersCache = gocache.New(5*time.Minute, 60*time.Minute)
-var groupMembersCache = cache.NewCache()
+// var groupMembersCache = cache.NewCache()
 
 // NewClientWithGitlabPrivateToken returns a new Client with a Gitlab's private token
 func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string, privateToken string) *Client {
@@ -44,16 +43,19 @@ func (c *Client) GetGitlabGroupMembers(key string) (interface{}, error) {
 	return groupMembers, nil
 }
 
-func (c *Client) TestCallback(key string) (interface{}, error) {
-	return []string{"test", "blabla", key}, nil
-}
+// func (c *Client) TestCallback(key string) (interface{}, error) {
+// 	return []string{"test", "blabla", key}, nil
+// 	// return nil, fmt.Errorf("error")
+// }
 
 // MailsFromGroupProject returns distincts mails from a project and its group
 func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) {
 	const level = 40
 
-	groupMembers, err := groupMembersCache.GetWithCallback(group, c.GetGitlabGroupMembers)
-	if err != nil {
+	groupMembers, err := cache.GetWithCallback(group, c.GetGitlabGroupMembers)
+	// groupMembers, err := cache.GetWithCallback(group, c.TestCallback)
+	// groupMembers, err := groupMembersCache.GetWithCallback(group, c.GetGitlabGroupMembers)
+	if err != nil && groupMembers == nil {
 		return nil, err
 	}
 	mails := make(map[string]interface{})
