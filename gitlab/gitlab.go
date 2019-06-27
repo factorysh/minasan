@@ -21,6 +21,18 @@ type Client struct {
 
 var gclient *Client = nil
 
+func (c *Client) GetGitlabGroupMembers(key string) (interface{}, error) {
+	groupMembers, resp, err := c.Groups.ListGroupMembers(key, &gitlab.ListGroupMembersOptions{})
+	if err != nil {
+		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
+		if resp.StatusCode == 404 {
+			metrics.WrongProjectCounter.Inc()
+		}
+		return nil, err
+	}
+	return groupMembers, nil
+}
+
 // NewClientWithGitlabPrivateToken returns a new Client with a Gitlab's private token
 func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string,
 	privateToken string, ttl time.Duration, cachePath string) (*Client, error) {
@@ -40,18 +52,6 @@ func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string,
 func NewClientFromEnv(client *http.Client) (*Client, error) {
 	return NewClientWithGitlabPrivateToken(client, os.Getenv("GITLAB_DOMAIN"),
 		os.Getenv("GITLAB_PRIVATE_TOKEN"), 5*time.Minute, "/tmp/minasan.db")
-}
-
-func (c *Client) GetGitlabGroupMembers(key string) (interface{}, error) {
-	groupMembers, resp, err := c.Groups.ListGroupMembers(key, &gitlab.ListGroupMembersOptions{})
-	if err != nil {
-		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
-		if resp.StatusCode == 404 {
-			metrics.WrongProjectCounter.Inc()
-		}
-		return nil, err
-	}
-	return groupMembers, nil
 }
 
 // MailsFromGroupProject returns distincts mails from a project and its group
