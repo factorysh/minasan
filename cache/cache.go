@@ -8,10 +8,6 @@ import (
 	"github.com/coreos/bbolt"
 )
 
-const (
-	expirationTime = 5 * time.Minute
-)
-
 type callback func(key string) (interface{}, error)
 
 type Cache struct {
@@ -19,13 +15,26 @@ type Cache struct {
 	Content interface{}
 }
 
-func setupDB() (*bbolt.DB, error) {
-	db, err := bbolt.Open("cache.db", 0600, nil)
+type Cachedb struct {
+	db       *bbolt.DB
+	duration time.Duration
+}
+
+const (
+	DBNAME = "DB"
+)
+
+var (
+	BUCKET = []byte(DBNAME)
+)
+
+func New(d time.Duration, path string) (*Cachedb, error) {
+	db, err := bbolt.Open(path, 0600, nil)
 	if err != nil {
 		return nil, fmt.Errorf("can't open db, %v", err)
 	}
 	err = db.Update(func(tx *bbolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("DB"))
+		_, err := tx.CreateBucketIfNotExists(BUCKET)
 		if err != nil {
 			return fmt.Errorf("can't create DB bucket: %v", err)
 		}
@@ -34,17 +43,27 @@ func setupDB() (*bbolt.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("set up bucket error, %v", err)
 	}
-	return db, nil
+	return &Cachedb{
+		db:       db,
+		duration: d,
+	}, nil
 }
 
-func setCache(db *bbolt.DB, value interface{}) error {
-	err := db.Update(func(tx *bbolt.Tx) error {
-		cache := Cache{time.Now(), value}
-		encoded, err := json.Marshal(cache)
-		if err != nil {
-			return fmt.Errorf("can't encode in json: %v", err)
-		}
-		err = tx.Bucket([]byte("DB")).Put([]byte("CACHE"), encoded)
+func (c *Cachedb) Close() {
+	c.db.Close()
+}
+
+func (c *Cachedb) set(key string, value interface{}) error {
+	cache := Cache{
+		Time:    time.Now().Add(c.duration),
+		Content: value,
+	}
+	encoded, err := json.Marshal(cache)
+	if err != nil {
+		return fmt.Errorf("can't encode in json: %v", err)
+	}
+	err = c.db.Update(func(tx *bbolt.Tx) error {
+		err = tx.Bucket([]byte("DB")).Put([]byte(key), encoded)
 		if err != nil {
 			return fmt.Errorf("can't set cache: %v", err)
 		}
@@ -53,53 +72,49 @@ func setCache(db *bbolt.DB, value interface{}) error {
 	return err
 }
 
-func getCache(db *bbolt.DB, expTime time.Duration) (*Cache, bool, error) {
-	cache := new(Cache)
-	exp := false
-	err := db.View(func(tx *bbolt.Tx) error {
-		bk := tx.Bucket([]byte("DB"))
+// Get key return value, is expired, error
+func (c *Cachedb) get(key string) (interface{}, bool, error) {
+	now := time.Now()
+	var encoded []byte
+	err := c.db.View(func(tx *bbolt.Tx) error {
+		bk := tx.Bucket(BUCKET)
 		if bk == nil {
 			return fmt.Errorf("failed to get bucket DB")
 		}
-		encoded := bk.Get([]byte("CACHE"))
-		if encoded == nil {
-			return fmt.Errorf("CACHE not found in the db")
-		}
-		err := json.Unmarshal(encoded, &cache)
-		if err != nil {
-			return fmt.Errorf("can't decode json: %v", err)
-		}
-		t := time.Since(cache.Time)
-		if t > expTime {
-			exp = true
-		}
+		encoded = bk.Get([]byte(key))
 		return nil
 	})
 	if err != nil {
 		return nil, false, err
 	}
-	return cache, exp, err
+	if encoded == nil {
+		return nil, false, nil
+	}
+	var cache Cache
+	err = json.Unmarshal(encoded, &cache)
+	if err != nil {
+		return nil, false, err
+	}
+	return cache.Content, cache.Time.Before(now), nil
 }
 
-// Get an item from the cache. If the item is not found or expired, get it from the callback function and set it in the cache, or take the expired cache if fail
-func GetWithCallback(key string, fn callback) (interface{}, error) {
-	db, err := setupDB()
+// LazyGet an item from the cache. If the item is not found or expired, get it from the callback function and set it in the cache, or take the expired cache if fail
+func (c *Cachedb) LazyGet(key string, fn callback) (interface{}, error) {
+	cached, exp, err := c.get(key)
 	if err != nil {
 		return nil, err
 	}
-	defer db.Close()
-	cached, exp, err := getCache(db, expirationTime)
 	if cached == nil || (cached != nil && exp) {
 		result, err := fn(key)
 		if err != nil && cached == nil {
 			return nil, err
 		} else if err == nil {
-			err = setCache(db, result)
+			err = c.set(key, result)
 			if err != nil {
 				return result, err
 			}
 			return result, nil
 		}
 	}
-	return cached.Content, nil
+	return cached, nil
 }

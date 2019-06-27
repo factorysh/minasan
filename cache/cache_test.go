@@ -11,21 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func cleanDB(db *bbolt.DB) error {
-	err := db.Update(func(tx *bbolt.Tx) error {
-		err := tx.Bucket([]byte("DB")).Delete([]byte("CACHE"))
-		if err != nil {
-			return fmt.Errorf("can't delete cache bucket: %v", err)
-		}
-		err = tx.DeleteBucket([]byte("DB"))
-		if err != nil {
-			return fmt.Errorf("can't delete db: %v", err)
-		}
-		return nil
-	})
-	return err
-}
-
 // Good callback function
 func CallbackGood(key string) (interface{}, error) {
 	tab := []string{"test", "blabla", "coucou"}
@@ -34,65 +19,41 @@ func CallbackGood(key string) (interface{}, error) {
 
 // Bad callback function
 func CallbackBad(key string) (interface{}, error) {
-	return nil, fmt.Errorf("error")
+	return nil, fmt.Errorf("callback bad error")
 }
 
-// Test for the SetupDB
-func TestSetupDB(t *testing.T) {
-	db, err := setupDB()
+func TestNewCache(t *testing.T) {
+	c, err := New(5*time.Minute, "test_cache_minasan.db")
 	assert.NoError(t, err)
-	defer db.Close()
-	assert.FileExists(t, "cache.db", "file cache.db should exist")
-	err = cleanDB(db)
+	assert.NotNil(t, *c)
+	assert.NotNil(t, *c.db)
+	assert.Equal(t, 5*time.Minute, c.duration, "The times should be the same")
+	err = c.set("testnew", "test_string")
 	assert.NoError(t, err)
+	c.Close()
+	err = c.set("testnew", "test_string")
+	assert.Error(t, err)
+	// Remove the DB file
+	os.Remove("test_cache_minasan.db")
 }
 
-func TestSetCache(t *testing.T) {
-	// Setup the DB
-	db, err := setupDB()
-	assert.NoError(t, err)
-	defer db.Close()
-	// Set the test cache
-	err = setCache(db, "test_set_string")
-	assert.NoError(t, err)
-	// get the cache manualy
-	cache := new(Cache)
-	err = db.View(func(tx *bbolt.Tx) error {
-		bk := tx.Bucket([]byte("DB"))
-		if bk == nil {
-			return fmt.Errorf("failed to get bucket DB")
-		}
-		encoded := bk.Get([]byte("CACHE"))
-		if encoded == nil {
-			return fmt.Errorf("CACHE not found in the db")
-		}
-		err := json.Unmarshal(encoded, &cache)
-		if err != nil {
-			return fmt.Errorf("can't decode json: %v", err)
-		}
-		return nil
-	})
-	assert.NoError(t, err)
-	// Check if the cache is good
-	assert.Equal(t, "test_set_string", cache.Content, "The two interfaces should be the same")
-	// Clean the DB
-	err = cleanDB(db)
-	assert.NoError(t, err)
-}
-
+// Test for the Get function
 func TestGetCache(t *testing.T) {
 	// Setup the DB
-	db, err := setupDB()
+	c, err := New(5*time.Minute, "test_cache_minasan.db")
 	assert.NoError(t, err)
-	defer db.Close()
+	defer c.Close()
 	// Create an artificial cache in the DB
-	err = db.Update(func(tx *bbolt.Tx) error {
-		cache := Cache{time.Now(), "test_get_string"}
+	err = c.db.Update(func(tx *bbolt.Tx) error {
+		cache := Cache{
+			Time:    time.Now().Add(5 * time.Minute),
+			Content: "test_get_string",
+		}
 		encoded, err := json.Marshal(cache)
 		if err != nil {
 			return fmt.Errorf("can't encode in json: %v", err)
 		}
-		err = tx.Bucket([]byte("DB")).Put([]byte("CACHE"), encoded)
+		err = tx.Bucket([]byte(BUCKET)).Put([]byte("testget"), encoded)
 		if err != nil {
 			return fmt.Errorf("can't set cache: %v", err)
 		}
@@ -100,33 +61,68 @@ func TestGetCache(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	// get the cache with normal expiration time -> should be good
-	cached, exp, err := getCache(db, expirationTime)
+	cached, exp, err := c.get("testget")
 	assert.NoError(t, err)
-	assert.Equal(t, "test_get_string", cached.Content, "The two interfaces should be the same")
+	assert.Equal(t, "test_get_string", cached, "The two interfaces should be the same")
 	assert.False(t, exp, "The expiration time should be false")
-	// get the cache with bad expiration time -> should be expired
-	_, exp, err = getCache(db, 1)
-	assert.NoError(t, err)
-	assert.True(t, exp, "The expiration time should be true")
-	// Clean the DB
-	err = cleanDB(db)
-	assert.NoError(t, err)
+	// Remove the DB file
+	os.Remove("test_cache_minasan.db")
 }
 
+// Test for the Set function
+func TestSetCache(t *testing.T) {
+	// Setup the DB
+	c, err := New(5*time.Minute, "test_cache_minasan.db")
+	assert.NoError(t, err)
+	defer c.Close()
+
+	err = c.set("testset", "test_set_string")
+	assert.NoError(t, err)
+	// Get the cache with the normal (previously tested) Get
+	cached, exp, err := c.get("testset")
+	assert.NoError(t, err)
+	assert.Equal(t, "test_set_string", cached, "The two interfaces should be the same")
+	assert.False(t, exp, "The expiration time should be false")
+	// Remove the DB file
+	os.Remove("test_cache_minasan.db")
+}
+
+// Test the expiration time
+func TestExpirationCache(t *testing.T) {
+	// Setup the DB
+	c, err := New(time.Nanosecond, "test_cache_minasan.db")
+	assert.NoError(t, err)
+	defer c.Close()
+
+	err = c.set("testexp", "test_exp")
+	assert.NoError(t, err)
+	cached, exp, err := c.get("testexp")
+	assert.NoError(t, err)
+	assert.Equal(t, "test_exp", cached, "The two interfaces should be the same")
+	assert.True(t, exp, "The expiration time should be true")
+	// Remove the DB file
+	os.Remove("test_cache_minasan.db")
+}
+
+// General test for the normal use of the cache
 func TestGeneralCache(t *testing.T) {
+	// New Cache
+	c, err := New(5*time.Minute, "test_cache_minasan.db")
+	assert.NoError(t, err)
+	defer c.Close()
 	// Callback function return an error
-	_, err := GetWithCallback("test_bad", CallbackBad)
+	_, err = c.LazyGet("test", CallbackBad)
 	assert.Error(t, err)
 	// get the good tab from the callback function for compare
 	goodtab, _ := CallbackGood("test")
 	// Callback function return good
-	result, err := GetWithCallback("test_good", CallbackGood)
+	result, err := c.LazyGet("test", CallbackGood)
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, goodtab, result, "The two interfaces should be the same")
 	// Callback function return an error, but shoul return the previous result from cache
-	result2, err2 := GetWithCallback("test_bad_but_good", CallbackBad)
+	result2, err2 := c.LazyGet("test", CallbackBad)
 	assert.NoError(t, err2)
 	assert.ElementsMatch(t, goodtab, result2, "The two interfaces should be the same")
 	// Remove the DB file
-	os.Remove("cache.db")
+	os.Remove("test_cache_minasan.db")
 }

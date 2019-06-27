@@ -5,6 +5,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/factorysh/minasan/cache"
 	"github.com/factorysh/minasan/metrics"
@@ -15,18 +16,30 @@ import (
 // Client for Gitlab REST API
 type Client struct {
 	*gitlab.Client
+	cache *cache.Cachedb
 }
 
+var gclient *Client = nil
+
 // NewClientWithGitlabPrivateToken returns a new Client with a Gitlab's private token
-func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string, privateToken string) *Client {
-	gl := gitlab.NewClient(client, privateToken)
-	gl.SetBaseURL("https://" + gitlabDomain + "/api/v4")
-	return &Client{gl}
+func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string,
+	privateToken string, ttl time.Duration, cachePath string) (*Client, error) {
+	if gclient == nil {
+		c, err := cache.New(ttl, cachePath)
+		if err != nil {
+			return nil, err
+		}
+		gl := gitlab.NewClient(client, privateToken)
+		gl.SetBaseURL("https://" + gitlabDomain + "/api/v4")
+		gclient = &Client{gl, c}
+	}
+	return gclient, nil
 }
 
 // NewClientFromEnv returns a new Client from environments
-func NewClientFromEnv(client *http.Client) *Client {
-	return NewClientWithGitlabPrivateToken(client, os.Getenv("GITLAB_DOMAIN"), os.Getenv("GITLAB_PRIVATE_TOKEN"))
+func NewClientFromEnv(client *http.Client) (*Client, error) {
+	return NewClientWithGitlabPrivateToken(client, os.Getenv("GITLAB_DOMAIN"),
+		os.Getenv("GITLAB_PRIVATE_TOKEN"), 5*time.Minute, "/tmp/minasan.db")
 }
 
 func (c *Client) GetGitlabGroupMembers(key string) (interface{}, error) {
@@ -44,8 +57,7 @@ func (c *Client) GetGitlabGroupMembers(key string) (interface{}, error) {
 // MailsFromGroupProject returns distincts mails from a project and its group
 func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) {
 	const level = 40
-
-	groupMembers, err := cache.GetWithCallback(group, c.GetGitlabGroupMembers)
+	groupMembers, err := c.cache.LazyGet(group, c.GetGitlabGroupMembers)
 	if err != nil && groupMembers == nil {
 		return nil, err
 	}
