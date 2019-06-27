@@ -3,6 +3,7 @@ package processor
 import (
 	"fmt"
 	"net/textproto"
+	"time"
 
 	"github.com/factorysh/minasan/gitlab"
 	"github.com/factorysh/minasan/metrics"
@@ -38,8 +39,8 @@ var MinasanProcessor = func() backends.Decorator {
 		minasan.SMTPOut = config.SMTPOut
 		minasan.Bcc = config.Bcc
 		minasan.SenderDomain = config.SenderDomain
+		minasan.Client, _ = gitlab.NewClientWithGitlabPrivateToken(nil, config.GitlabDomain, config.GitlabPrivateToken, 5*time.Minute, "/tmp/minasan.db")
 		minasan.LastChanceMail = config.LastChanceMail
-		minasan.Client = gitlab.NewClientWithGitlabPrivateToken(nil, config.GitlabDomain, config.GitlabPrivateToken)
 		return nil
 	})
 	// register our initializer

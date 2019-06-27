@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/viper"
 
@@ -20,9 +21,13 @@ var gitlabCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(2),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client := gitlab.NewClientWithGitlabPrivateToken(nil,
+		client, err := gitlab.NewClientWithGitlabPrivateToken(nil,
 			viper.GetString("gitlab_domain"),
-			viper.GetString("gitlab_private_token"))
+			viper.GetString("gitlab_private_token"),
+			5*time.Minute, "/tmp/minasan.db")
+		if err != nil {
+			return err
+		}
 		mails, err := client.MailsFromGroupProject(args[0], args[1], viper.GetString("last_chance_mail"))
 		if err != nil {
 			return err
@@ -38,9 +43,13 @@ var pingCmd = &cobra.Command{
 	Use:   "ping",
 	Short: "Ping your gitlab",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client := gitlab.NewClientWithGitlabPrivateToken(nil,
+		client, err := gitlab.NewClientWithGitlabPrivateToken(nil,
 			viper.GetString("gitlab_domain"),
-			viper.GetString("gitlab_private_token"))
+			viper.GetString("gitlab_private_token"),
+			5*time.Minute, "/tmp/minasan.db")
+		if err != nil {
+			return err
+		}
 		name, err := client.Ping()
 		if err != nil {
 			return err

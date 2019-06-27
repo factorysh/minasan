@@ -5,7 +5,9 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
+	"github.com/factorysh/minasan/cache"
 	"github.com/factorysh/minasan/metrics"
 	log "github.com/sirupsen/logrus"
 	gitlab "github.com/xanzy/go-gitlab"
@@ -14,28 +16,15 @@ import (
 // Client for Gitlab REST API
 type Client struct {
 	*gitlab.Client
+	cache *cache.Cachedb
 }
 
-// NewClientWithGitlabPrivateToken returns a new Client with a Gitlab's private token
-func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string, privateToken string) *Client {
-	gl := gitlab.NewClient(client, privateToken)
-	gl.SetBaseURL("https://" + gitlabDomain + "/api/v4")
-	return &Client{gl}
-}
+var gclient *Client = nil
 
-// NewClientFromEnv returns a new Client from environments
-func NewClientFromEnv(client *http.Client) *Client {
-	return NewClientWithGitlabPrivateToken(client, os.Getenv("GITLAB_DOMAIN"), os.Getenv("GITLAB_PRIVATE_TOKEN"))
-}
-
-// MailsFromGroupProject returns distincts mails from a project and its group
-func (c *Client) MailsFromGroupProject(group, project, lastChanceMail string) ([]string, error) {
-	const level = 40
-	// Works for gitlab 9, but documentation talks about https://docs.gitlab.com/ce/api/members.html#list-all-members-of-a-group-or-project-including-inherited-members
-	// It doesn't work with curl + private token, and go-gitlab seems to not implement it
-	groupMembers, resp, err := c.Groups.ListGroupMembers(group, &gitlab.ListGroupMembersOptions{})
+func (c *Client) GetGitlabGroupMembers(key string) (interface{}, error) {
+	groupMembers, resp, err := c.Groups.ListGroupMembers(key, &gitlab.ListGroupMembersOptions{})
 	if err != nil {
-		log.WithField("response", resp).WithError(err).Warning("MailsFromGroupProject")
+		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
 		if resp != nil {
 			if resp.StatusCode == 404 {
 				metrics.WrongProjectCounter.Inc()
@@ -43,6 +32,38 @@ func (c *Client) MailsFromGroupProject(group, project, lastChanceMail string) ([
 		} else {
 			log.Warning("response is null")
 		}
+		return nil, err
+	}
+	return groupMembers, nil
+}
+
+// NewClientWithGitlabPrivateToken returns a new Client with a Gitlab's private token
+func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string,
+	privateToken string, ttl time.Duration, cachePath string) (*Client, error) {
+	if gclient == nil {
+		c, err := cache.New(ttl, cachePath)
+		if err != nil {
+			return nil, err
+		}
+		gl := gitlab.NewClient(client, privateToken)
+		gl.SetBaseURL("https://" + gitlabDomain + "/api/v4")
+		gclient = &Client{gl, c}
+	}
+	return gclient, nil
+}
+
+// NewClientFromEnv returns a new Client from environments
+func NewClientFromEnv(client *http.Client) (*Client, error) {
+	return NewClientWithGitlabPrivateToken(client, os.Getenv("GITLAB_DOMAIN"),
+		os.Getenv("GITLAB_PRIVATE_TOKEN"), 5*time.Minute, "/tmp/minasan.db")
+}
+
+// MailsFromGroupProject returns distincts mails from a project and its group
+func (c *Client) MailsFromGroupProject(group, project, lastChanceMail string) ([]string, error) {
+	const level = 40
+
+	groupMembers, err := c.cache.LazyGet(group, c.GetGitlabGroupMembers)
+	if err != nil && groupMembers == nil {
 		// Gitlab is unavailable, send a last chance email
 		if lastChanceMail != "" {
 			email := []string{lastChanceMail}
@@ -53,7 +74,7 @@ func (c *Client) MailsFromGroupProject(group, project, lastChanceMail string) ([
 		return nil, err
 	}
 	mails := make(map[string]interface{})
-	for _, member := range groupMembers {
+	for _, member := range groupMembers.([]*gitlab.GroupMember) {
 		if member.AccessLevel < level || member.State != "active" {
 			continue
 		}
