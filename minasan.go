@@ -16,10 +16,10 @@ func main() {
 		sentryHook := sentry.NewHook(dsn, log.PanicLevel, log.FatalLevel, log.ErrorLevel)
 		log.AddHook(sentryHook)
 	}
+
 	// Logrus hook for adding file name and line to logs
 	filenameHook := filename.NewHook()
 	log.AddHook(filenameHook)
-
 	log.SetLevel(log.InfoLevel)
 	cmd.Execute()
 }

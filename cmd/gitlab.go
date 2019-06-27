@@ -28,7 +28,7 @@ var gitlabCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		mails, err := client.MailsFromGroupProject(args[0], args[1])
+		mails, err := client.MailsFromGroupProject(args[0], args[1], viper.GetString("last_chance_mail"))
 		if err != nil {
 			return err
 		}

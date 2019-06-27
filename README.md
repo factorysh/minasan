@@ -1,12 +1,12 @@
-皆さん
-======
+# 皆さん
+
+[![Build Status](https://drone.bearstech.com/api/badges/factorysh/minasan/status.svg)](https://drone.bearstech.com/factorysh/minasan)
 
 Minasan is a SMTP server, linked to a Gitlab instance.
 
 When you send a mail to user `{group}.{project}`, every gitlab's users of this project, with higher level than observator receive the mail.
 
-Big picture
------------
+## Big picture
 
             +---------+    +------------+
     mail -> | Minasan | -> | SMTP Relay +--+-> Alice
@@ -23,8 +23,7 @@ that handle greylist, bounce, reputation and all that voodoo dances.
 Minasan uses Gitlab REST API, with a private token. Great for using, boring for testing.
 Gitlab REST API doesn't expose user + project = ☆, what a pity.
 
-Demo time
----------
+## Demo time
 
 You need Docker, golang build tools, a Gitlab instance with sufficient privileges.
 
@@ -44,7 +43,6 @@ You need a config file (or some ENVs, or some cli flags)
 
 ```yaml
 ---
-
 gitlab_private_token: shmurtz
 gitlab_domain: gitlab.example.com
 smtp_out: 127.0.0.1:1025
@@ -57,8 +55,7 @@ Send some mails
 
     ./debug_client.py factory.minasan@example.com
 
-Usage
------
+## Usage
 
 Minasan uses [go-guerilla](https://github.com/flashmob/go-guerrilla),
 [viper](https://github.com/spf13/viper) and [cobra](https://github.com/spf13/cobra)
@@ -88,6 +85,7 @@ Use "minasan [command] --help" for more information about a command.
 ```
 
 And for the `serve` command:
+
 ```
 ./bin/minasan serve -h
 Listen as a SMTP server
@@ -108,8 +106,7 @@ Global Flags:
   -t, --gitlab_private_token string   Gitlab private token
 ```
 
-API
----
+## API
 
 Minasan is a simple SMTP server, unauthenticated.
 
@@ -117,7 +114,6 @@ Minasan 127.0.0.1:2525 and talks SMTP.
 
 You send a mail to `{group}.{project}@{domain}`. `domain` is the `-d` option, an arbitrary name, go-guerilla loves routing, and a domain is mandatory.
 
-Licence
--------
+## Licence
 
-3 terms  BSD Licence. ©2018 Mathieu Lecarme.
+3 terms BSD Licence. ©2018 Mathieu Lecarme.

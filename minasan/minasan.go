@@ -8,6 +8,7 @@ import (
 	"net/smtp"
 	"net/textproto"
 
+	"github.com/factorysh/minasan/blacklist"
 	"github.com/factorysh/minasan/gitlab"
 	"github.com/factorysh/minasan/metrics"
 	"github.com/flashmob/go-guerrilla/mail"
@@ -16,10 +17,11 @@ import (
 
 // Minasan sends emails from Gitlab groups to a SMTPOut
 type Minasan struct {
-	Client       *gitlab.Client
-	SMTPOut      string
-	Bcc          string
-	SenderDomain string
+	Client         *gitlab.Client
+	SMTPOut        string
+	Bcc            string
+	SenderDomain   string
+	LastChanceMail string
 }
 
 // Targets return mails, group, project from a mail name
@@ -30,7 +32,7 @@ func (m *Minasan) Targets(mailName string) ([]string, string, string, error) {
 	}
 	group := blob[0]
 	project := blob[1]
-	targets, err := m.Client.MailsFromGroupProject(group, project)
+	targets, err := m.Client.MailsFromGroupProject(group, project, m.LastChanceMail)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -57,6 +59,10 @@ func (m *Minasan) BroadcastMail(mails []string, envelope *mail.Envelope,
 	for _, mail := range mails {
 		if mail == "" {
 			log.Warning("Empty mail, it's a real bug, but I don't want to crash. FIXME")
+			continue
+		}
+		if blacklist.IsBlackListed(mail) {
+			log.Info("Blacklisted mail: ", mail)
 			continue
 		}
 		c, err := smtp.Dial(m.SMTPOut)

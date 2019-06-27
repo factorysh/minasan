@@ -55,10 +55,18 @@ func NewClientFromEnv(client *http.Client) (*Client, error) {
 }
 
 // MailsFromGroupProject returns distincts mails from a project and its group
-func (c *Client) MailsFromGroupProject(group, project string) ([]string, error) {
+func (c *Client) MailsFromGroupProject(group, project, lastChanceMail string) ([]string, error) {
 	const level = 40
+
 	groupMembers, err := c.cache.LazyGet(group, c.GetGitlabGroupMembers)
 	if err != nil && groupMembers == nil {
+		// Gitlab is unavailable, send a last chance email
+		if lastChanceMail != "" {
+			email := []string{lastChanceMail}
+			log.Info("Sending last chance email")
+			return email, nil
+		}
+		log.Warning("last_chance_mail is not set")
 		return nil, err
 	}
 	mails := make(map[string]interface{})

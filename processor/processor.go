@@ -21,6 +21,7 @@ type myMinasanConfig struct {
 	Bcc                string `json:"bcc",omitempty`
 	SenderDomain       string `json:"sender_domain",omitempty`
 	ReturnPath         string `json:"return_path",omitempty`
+	LastChanceMail     string `json:"last_chance_mail"`
 }
 
 // MinasanProcessor send mails to gitlab's pals
@@ -39,6 +40,7 @@ var MinasanProcessor = func() backends.Decorator {
 		minasan.Bcc = config.Bcc
 		minasan.SenderDomain = config.SenderDomain
 		minasan.Client, _ = gitlab.NewClientWithGitlabPrivateToken(nil, config.GitlabDomain, config.GitlabPrivateToken, 5*time.Minute, "/tmp/minasan.db")
+		minasan.LastChanceMail = config.LastChanceMail
 		return nil
 	})
 	// register our initializer
@@ -74,7 +76,6 @@ var MinasanProcessor = func() backends.Decorator {
 					// if no error:
 					return p.Process(e, task)
 				} else if task == backends.TaskSaveMail {
-
 					// if you want your processor to do some processing after
 					// receiving the email, continue here.
 					// if want to stop processing, return
