@@ -1,7 +1,8 @@
 package cache
 
 import (
-	"encoding/json"
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"os"
 	"testing"
@@ -20,6 +21,34 @@ func CallbackGood(key string) (interface{}, error) {
 // Bad callback function
 func CallbackBad(key string) (interface{}, error) {
 	return nil, fmt.Errorf("callback bad error")
+}
+
+func TestEncode(t *testing.T) {
+	str := "string for test"
+	test_cache := Cache{time.Now(), str}
+
+	buffer := new(bytes.Buffer)
+	encoder := gob.NewEncoder(buffer)
+	encoder.Encode(test_cache)
+	expected := buffer.Bytes()
+
+	result, err := encode(test_cache)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result, "The []byte should be the same")
+}
+
+func TestDecode(t *testing.T) {
+	str := "string for test"
+	test_cache := &Cache{time.Date(0, 0, 0, 0, 0, 0, 0, time.Local), str}
+
+	buffer := new(bytes.Buffer)
+	encoder := gob.NewEncoder(buffer)
+	encoder.Encode(test_cache)
+	encoded := buffer.Bytes()
+
+	result, err := decode(encoded)
+	assert.NoError(t, err)
+	assert.Equal(t, test_cache, result, "The decoded string should be the same")
 }
 
 func TestNewCache(t *testing.T) {
@@ -49,9 +78,9 @@ func TestGetCache(t *testing.T) {
 			Time:    time.Now().Add(5 * time.Minute),
 			Content: "test_get_string",
 		}
-		encoded, err := json.Marshal(cache)
+		encoded, err := encode(cache)
 		if err != nil {
-			return fmt.Errorf("can't encode in json: %v", err)
+			return err
 		}
 		err = tx.Bucket([]byte(BUCKET)).Put([]byte("testget"), encoded)
 		if err != nil {

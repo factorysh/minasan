@@ -1,7 +1,8 @@
 package cache
 
 import (
-	"encoding/json"
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"time"
 
@@ -53,14 +54,35 @@ func (c *Cachedb) Close() {
 	c.db.Close()
 }
 
+func encode(data Cache) ([]byte, error) {
+	buffer := new(bytes.Buffer)
+	encoder := gob.NewEncoder(buffer)
+	err := encoder.Encode(data)
+	if err != nil {
+		return nil, fmt.Errorf("can't encode with gob: %v", err)
+	}
+	return buffer.Bytes(), nil
+}
+
+func decode(data []byte) (*Cache, error) {
+	var cache Cache
+	buffer := bytes.NewBuffer(data)
+	decoder := gob.NewDecoder(buffer)
+	err := decoder.Decode(&cache)
+	if err != nil {
+		return nil, fmt.Errorf("can't decode with gob: %v", err)
+	}
+	return &cache, nil
+}
+
 func (c *Cachedb) set(key string, value interface{}) error {
 	cache := Cache{
 		Time:    time.Now().Add(c.duration),
 		Content: value,
 	}
-	encoded, err := json.Marshal(cache)
+	encoded, err := encode(cache)
 	if err != nil {
-		return fmt.Errorf("can't encode in json: %v", err)
+		return err
 	}
 	err = c.db.Update(func(tx *bbolt.Tx) error {
 		err = tx.Bucket([]byte("DB")).Put([]byte(key), encoded)
@@ -90,8 +112,7 @@ func (c *Cachedb) get(key string) (interface{}, bool, error) {
 	if encoded == nil {
 		return nil, false, nil
 	}
-	var cache Cache
-	err = json.Unmarshal(encoded, &cache)
+	cache, err := decode(encoded)
 	if err != nil {
 		return nil, false, err
 	}
