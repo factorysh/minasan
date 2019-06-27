@@ -25,8 +25,12 @@ func (c *Client) GetGitlabGroupMembers(key string) (interface{}, error) {
 	groupMembers, resp, err := c.Groups.ListGroupMembers(key, &gitlab.ListGroupMembersOptions{})
 	if err != nil {
 		log.WithField("response", resp).WithError(err).Error("MailsFromGroupProject")
-		if resp.StatusCode == 404 {
-			metrics.WrongProjectCounter.Inc()
+		if resp != nil {
+			if resp.StatusCode == 404 {
+				metrics.WrongProjectCounter.Inc()
+			}
+		} else {
+			log.Warning("response is null")
 		}
 		return nil, err
 	}
