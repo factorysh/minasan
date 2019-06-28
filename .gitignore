@@ -2,4 +2,3 @@ vendor
 bin
 .env
 config.yml
-cache.db
