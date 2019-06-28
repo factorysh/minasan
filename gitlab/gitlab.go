@@ -54,8 +54,14 @@ func NewClientWithGitlabPrivateToken(client *http.Client, gitlabDomain string,
 
 // NewClientFromEnv returns a new Client from environments
 func NewClientFromEnv(client *http.Client) (*Client, error) {
-	return NewClientWithGitlabPrivateToken(client, os.Getenv("GITLAB_DOMAIN"),
-		os.Getenv("GITLAB_PRIVATE_TOKEN"), 5*time.Minute, "/tmp/minasan.db")
+	exp, _ := time.ParseDuration(os.Getenv("GITLAB_CACHE_EXPIRATION"))
+	return NewClientWithGitlabPrivateToken(
+		client,
+		os.Getenv("GITLAB_DOMAIN"),
+		os.Getenv("GITLAB_PRIVATE_TOKEN"),
+		exp,
+		os.Getenv("GITLAB_CACHE_PATH"),
+	)
 }
 
 // MailsFromGroupProject returns distincts mails from a project and its group

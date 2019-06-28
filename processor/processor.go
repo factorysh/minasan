@@ -15,13 +15,15 @@ import (
 )
 
 type myMinasanConfig struct {
-	GitlabDomain       string `json:"gitlab_domain"`
-	GitlabPrivateToken string `json:"gitlab_private_token,omitempty"`
-	SMTPOut            string `json:"smtp_out,omitempty"`
-	Bcc                string `json:"bcc",omitempty`
-	SenderDomain       string `json:"sender_domain",omitempty`
-	ReturnPath         string `json:"return_path",omitempty`
-	LastChanceMail     string `json:"last_chance_mail"`
+	GitlabDomain       string        `json:"gitlab_domain"`
+	GitlabPrivateToken string        `json:"gitlab_private_token,omitempty"`
+	SMTPOut            string        `json:"smtp_out,omitempty"`
+	Bcc                string        `json:"bcc",omitempty`
+	SenderDomain       string        `json:"sender_domain",omitempty`
+	ReturnPath         string        `json:"return_path",omitempty`
+	LastChanceMail     string        `json:"last_chance_mail"`
+	CachePath          string        `json:"cache_path"`
+	CacheExpiration    time.Duration `json:"cache_expiration"`
 }
 
 // MinasanProcessor send mails to gitlab's pals
@@ -39,7 +41,12 @@ var MinasanProcessor = func() backends.Decorator {
 		minasan.SMTPOut = config.SMTPOut
 		minasan.Bcc = config.Bcc
 		minasan.SenderDomain = config.SenderDomain
-		minasan.Client, _ = gitlab.NewClientWithGitlabPrivateToken(nil, config.GitlabDomain, config.GitlabPrivateToken, 5*time.Minute, "/tmp/minasan.db")
+		minasan.Client, _ = gitlab.NewClientWithGitlabPrivateToken(
+			nil,
+			config.GitlabDomain,
+			config.GitlabPrivateToken,
+			config.CacheExpiration,
+			config.CachePath)
 		minasan.LastChanceMail = config.LastChanceMail
 		return nil
 	})

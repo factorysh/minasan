@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/spf13/viper"
 
@@ -24,7 +23,8 @@ var gitlabCmd = &cobra.Command{
 		client, err := gitlab.NewClientWithGitlabPrivateToken(nil,
 			viper.GetString("gitlab_domain"),
 			viper.GetString("gitlab_private_token"),
-			5*time.Minute, "/tmp/minasan.db")
+			viper.GetDuration("cache_expiration"),
+			viper.GetString("cache_path"))
 		if err != nil {
 			return err
 		}
@@ -46,7 +46,8 @@ var pingCmd = &cobra.Command{
 		client, err := gitlab.NewClientWithGitlabPrivateToken(nil,
 			viper.GetString("gitlab_domain"),
 			viper.GetString("gitlab_private_token"),
-			5*time.Minute, "/tmp/minasan.db")
+			viper.GetDuration("cache_expiration"),
+			viper.GetString("cache_path"))
 		if err != nil {
 			return err
 		}
