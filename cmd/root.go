@@ -58,7 +58,7 @@ func init() {
 	pf := rootCmd.PersistentFlags()
 	pf.StringVarP(&gitlabDomain, "gitlab_domain", "g", "gitlab.example.com", "Gitlab domain")
 	pf.StringVarP(&lastChanceMail, "last_chance_mail", "m", "test@example.com", "Last chance mail")
-	pf.StringVarP(&cachePath, "cache_path", "p", "/tmp/minasan.db", "Gitlab cache path and name for the db")
+	pf.StringVarP(&cachePath, "cache_path", "p", "/var/lib/minasan/minasan.db", "Gitlab cache path and name for the db")
 	pf.DurationVarP(&cacheExpiration, "cache_expiration", "e", 5*time.Minute, "Expiration time for the gitlab cache")
 	pf.StringVarP(&gitlabPrivateToken, "gitlab_private_token", "t", "", "Gitlab private token")
 	pf.StringVarP(&configFile, "config", "c", "", "Config file")
