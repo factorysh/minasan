@@ -42,6 +42,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:2faeefda33c255e905c48ce82c2c64bd02eda980ab639d5aa0d6fc21e061c78e"
+  name = "github.com/evalphobia/logrus_sentry"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ab0fa2ee9517a8e8c1de1c07e492e8164f852529"
+  version = "v0.8.2"
+
+[[projects]]
   branch = "dep"
   digest = "1:4933d8e20b37b65e4b41afd98e3943e98d0b6999144f1f3dd4b3bccd03255b3d"
   name = "github.com/flashmob/go-guerrilla"
@@ -141,12 +149,9 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f0f1573d1c76743e43c19a3cc0414eb4ffb039978b5943a4f78e57adc194d297"
+  digest = "1:96df5bdca983e4b8c62682af5b67100b187d582ac6db0968d8af52e84138d1e6"
   name = "github.com/onrik/logrus"
-  packages = [
-    "filename",
-    "sentry",
-  ]
+  packages = ["filename"]
   pruneopts = "UT"
   revision = "05335c5abaa99d4c7a3f36df162b483106ef38a8"
 
@@ -337,12 +342,12 @@
   analyzer-version = 1
   input-imports = [
     "github.com/coreos/bbolt",
+    "github.com/evalphobia/logrus_sentry",
     "github.com/flashmob/go-guerrilla",
     "github.com/flashmob/go-guerrilla/backends",
     "github.com/flashmob/go-guerrilla/mail",
     "github.com/flashmob/go-guerrilla/response",
     "github.com/onrik/logrus/filename",
-    "github.com/onrik/logrus/sentry",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promauto",
     "github.com/prometheus/client_golang/prometheus/promhttp",
