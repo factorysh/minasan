@@ -25,12 +25,8 @@
   name = "github.com/onrik/logrus"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/sirupsen/logrus"
-
-[[constraint]]
-  name = "github.com/evalphobia/logrus_sentry"
-  version = "~0.8.2"
+  version = "~1.0.4"
 
 [[constraint]]
   name = "github.com/prometheus/client_golang"
