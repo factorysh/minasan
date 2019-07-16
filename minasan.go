@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/factorysh/minasan/cmd"
+	"github.com/factorysh/minasan/version"
 	"github.com/onrik/logrus/filename"
 	"github.com/onrik/logrus/sentry"
 	log "github.com/sirupsen/logrus"
@@ -14,6 +15,8 @@ func main() {
 	dsn := os.Getenv("SENTRY_DSN")
 	if dsn != "" {
 		sentryHook := sentry.NewHook(dsn, log.PanicLevel, log.FatalLevel, log.ErrorLevel)
+		sentryHook.AddTag("version", version.Version())
+		sentryHook.AddTag("program", "Minasan")
 		log.AddHook(sentryHook)
 	}
 

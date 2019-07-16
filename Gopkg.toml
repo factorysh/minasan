@@ -25,5 +25,9 @@
   name = "github.com/onrik/logrus"
 
 [[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "~1.0.4"
+
+[[constraint]]
   name = "github.com/prometheus/client_golang"
   version = "~0.9.0"
