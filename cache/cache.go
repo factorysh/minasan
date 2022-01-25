@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/coreos/bbolt"
+	"go.etcd.io/bbolt"
 )
 
 type callback func(key string) (interface{}, error)
