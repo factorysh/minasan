@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coreos/bbolt"
 	"github.com/stretchr/testify/assert"
+	"go.etcd.io/bbolt"
 )
 
 // Good callback function
