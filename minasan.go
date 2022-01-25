@@ -14,7 +14,12 @@ func main() {
 	// logrus hook for sentry, if DSN is provided
 	dsn := os.Getenv("SENTRY_DSN")
 	if dsn != "" {
-		sentryHook := sentry.NewHook(dsn, log.PanicLevel, log.FatalLevel, log.ErrorLevel)
+		sentryHook, err := sentry.NewHook(sentry.Options{
+			Dsn: dsn,
+		}, log.PanicLevel, log.FatalLevel, log.ErrorLevel)
+		if err != nil {
+			panic(err)
+		}
 		sentryHook.AddTag("version", version.Version())
 		sentryHook.AddTag("program", "Minasan")
 		log.AddHook(sentryHook)
